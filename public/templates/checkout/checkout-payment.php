@@ -2,7 +2,7 @@
 <div class="dr-checkout__payment dr-checkout__el">
 
 <div class="dr-accordion">
-    
+
     <span class="dr-accordion__name">
 
         <?php echo isset( $steps_titles['payment'] ) ? $steps_titles['payment'] : ''; ?>
@@ -10,7 +10,7 @@
     </span>
 
     <span class="dr-accordion__edit">Edit></span>
-    
+
 </div>
 
 <form id="checkout-payment-form" class="dr-panel-edit dr-panel-edit--payment needs-validation" novalidate>
@@ -19,7 +19,7 @@
 
         <p class="payment-info">
 
-            <?php echo __( 'How would you like to pay?' ); ?>
+            <?php echo __( 'How would you like to pay?', 'digital-river-global-commerce' ); ?>
 
         </p>
 
@@ -38,9 +38,9 @@
                     <span class="credit-card-icon"></span>
 
                     <span class="black">
-                        
-                        <?php echo __( 'Credit Card' ); ?>
-                    
+
+                        <?php echo __( 'Credit Card', 'digital-river-global-commerce' ); ?>
+
                     </span>
 
                 </label>
@@ -98,7 +98,7 @@
 
                 <span class="black">
 
-                    <?php echo __( 'PayPal' ); ?>
+                    <?php echo __( 'PayPal', 'digital-river-global-commerce' ); ?>
 
                 </span>
 
@@ -128,8 +128,8 @@
 
     <button id="dr-submit-payment" type="submit" class="dr-panel-edit__btn dr-btn">
 
-        <?php echo __( 'Pay with card' ); ?>
-        
+        <?php echo __( 'Pay with card', 'digital-river-global-commerce' ); ?>
+
     </button>
 
     <div id="dr-paypal-button" class="dr-panel-edit__btn"></div>

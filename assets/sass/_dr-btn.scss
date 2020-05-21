@@ -14,7 +14,7 @@
     text-decoration: none;
 
     &:hover {
-        background: $blue-dark;
+        background-color: $blue-dark;
         text-decoration: none;
         color: white;
     }
@@ -70,11 +70,67 @@
             }
         }
     }
+
+    &:disabled {
+        filter: grayscale(100%);
+
+        &:hover {
+            background-color: $blue;
+        }
+    }
+}
+
+.dr-buy-btn:disabled {
+    filter: grayscale(100%);
 }
 
 .drgc-wrapper {
     .dr-btn {
         width: 100%;
+    }
+}
+
+.dr-loading {
+    position: relative;
+    min-height: 20px;
+    pointer-events: none;
+
+    &:before {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        background: rgba(255, 255, 255, 0.7);
+        z-index: 9999;
+    }
+
+    &:after {
+        content: '';
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        left: 50%;
+        top: 50%;
+        margin-left: -10px;
+        margin-top: -10px;
+        border: 4px solid #000;
+        border-left-color: transparent;
+        border-radius: 50%;
+        transition-duration: .5s;
+        transition-delay: .5s;
+        transition-duration: 1s;
+        transition-property: opacity;
+        animation-duration: 1s;
+        animation-iteration-count: infinite;
+        animation-name: rotate;
+        animation-timing-function: linear;
+        z-index: 10000;
+    }
+
+    &.dr-summary:after {
+        top: 25%;
     }
 }
 

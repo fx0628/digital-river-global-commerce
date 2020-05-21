@@ -153,6 +153,24 @@ class DRGC_Session {
 	}
 
 	/**
+	 * Reset the cookie
+	 * 
+	 * @return boolean
+	 */
+	public function reset_cookie() {
+		if ( isset( $_COOKIE[ $this->cookie ] ) ) {
+			$this->expires = time() + intval( 60 * 60 );
+			@setcookie( $this->cookie, $this->session_id . '|' . $this->expires, $this->expires, '/', '', false, true );
+	
+			$cookie = explode( '|', $_COOKIE[ $this->cookie ] );
+
+			return ( $cookie[1] < $this->expires );
+		} else {
+			return false;
+		}
+	}
+
+	/**
 	 * Create/modify the cookie of drgc_guest_flag
 	 */
 	public function set_guest_flag_cookie( $value ) {

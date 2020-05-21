@@ -1,0 +1,35 @@
+// Reference: https://www.w3schools.com/howto/howto_js_snackbar.asp
+.dr-toast {
+    visibility: hidden;
+    min-width: 250px;
+    max-width: 100%;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 2px;
+    padding: 14px 18px;
+    position: fixed;
+    z-index: 99999;
+    top: 30px;
+    font-size: 17px;
+    box-shadow:0 3px 6px rgba(0,0,0,.16),0 3px 6px rgba(0,0,0,.23);
+
+    &.show {
+        visibility: visible;
+        animation: slideDown 1s, slideUp 1s 7s;
+    }
+
+    &.success { background-color: #8bc34a; }
+    &.warning { background-color: #e9a33c; }
+    &.error { background-color: #d93737; }
+}
+
+@keyframes slideDown {
+    from { top: 0; opacity: 0; }
+    to { top: 30px; opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { top: 30px; opacity: 1; }
+    to { top: 0; opacity: 0; }
+}

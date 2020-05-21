@@ -26,6 +26,7 @@ export default class GenericUtils {
   async clickItem(target) {
     await t
       .expect(target.exists).ok()
+      .wait(500)
       .hover(target)
       .click(target);
   }
@@ -40,11 +41,19 @@ export default class GenericUtils {
     }
   }
 
-  async addProductsIntoCart(product){
+  async addProductsIntoCart(product, isVariation = false){
     const homePage = new HomePage();
     const minicartPage = new MiniCartPage();
     await this.clickItem(homePage.productsMenu);
     await this.clickItem(product);
+
+    // Add to cart btn changed to buy now button of variaction products, need to click add to cart
+    // when entered product's detail page after clicking buy now btn in products page.
+    if (isVariation) {
+      const addToCartBtn = Selector('.btn.btn-green.w-50.dr-buy-btn');
+      await t.click(addToCartBtn);
+    }
+
     await t.expect(minicartPage.viewCartBtn.exists).ok();
   }
 
@@ -131,13 +140,13 @@ export default class GenericUtils {
   }
 
 
-  async addProductAndProceedToCheckout(product) {
+  async addProductAndProceedToCheckout(product, isVariation = false) {
     const minicartPage = new MiniCartPage();
     const cartPage = new CartPage();
     const checkoutPage = new CheckoutPage();
     // Add a physical product into cart
     console.log('>> Add Product into Cart');
-    await this.addProductsIntoCart(product);
+    await this.addProductsIntoCart(product, isVariation);
 
     // Click View Cart btn in miniCart to go to Cart page
     console.log('>> Direct to cart page');

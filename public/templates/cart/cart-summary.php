@@ -28,7 +28,7 @@ $delivery_info = 'Delivery in 2-5 working days and extended 30 days return perio
 
     <div class="dr-summary__discount" <?php if ( $discount === 0 ) echo 'style="display: none;"' ?>>
 
-        <p class="discount-label"><?php echo __('Discount') ?></p>
+        <p class="discount-label"><?php echo __( 'Discount', 'digital-river-global-commerce' ) ?></p>
 
         <p class="discount-value"><?php echo '-' . $formatted_discount; ?></p>
 
@@ -36,7 +36,7 @@ $delivery_info = 'Delivery in 2-5 working days and extended 30 days return perio
 
     <div class="dr-summary__discounted-subtotal">
 
-        <p class="discounted-subtotal-label"><?php echo __('Subtotal') ?></p>
+        <p class="discounted-subtotal-label"><?php echo __( 'Subtotal', 'digital-river-global-commerce' ) ?></p>
 
         <p class="discounted-subtotal-value"><?php echo $subtotal_with_discount_value; ?></p>
 
@@ -44,24 +44,24 @@ $delivery_info = 'Delivery in 2-5 working days and extended 30 days return perio
 
     <div class="dr-summary__shipping">
 
-        <p class="shipping-label"><?php echo __('Estimated Shipping') ?></p>
+        <p class="shipping-label"><?php echo __( 'Estimated Shipping', 'digital-river-global-commerce' ) ?></p>
 
         <p class="shipping-value"><?php echo $shipping_price; ?></p>
 
     </div>
 
     <div class="dr-summary__promo-code">
-        <a class="promo-code-toggle" href="javascript:void(0);"><?php echo __('Add Promo Code +') ?></a>
+        <a class="promo-code-toggle" href="javascript:void(0);"><?php echo __( 'Add Promo Code', 'digital-river-global-commerce' ) ?> +</a>
         <div class="promo-code-wrapper" style="display: none;">
-            <input type="text" class="form-control" id="promo-code" name="promo_code" placeholder="<?php echo __('Promo Code') ?>">
-            <button type="button" class="dr-btn" id="apply-promo-code-btn"><?php echo __('Apply') ?></button>
+            <input type="text" class="form-control" id="promo-code" name="promo_code" placeholder="<?php echo __( 'Promo Code', 'digital-river-global-commerce' ) ?>">
+            <button type="button" class="dr-btn" id="apply-promo-code-btn"><?php echo __( 'Apply', 'digital-river-global-commerce' ) ?></button>
             <div class="invalid-feedback" id="dr-promo-code-err-field"></div>
         </div>
     </div>
 
 	<?php if ( 1 < count($cart['cart']['lineItems'] )) : ?>
 
-        <a href="<?php echo esc_url( drgc_get_page_link( 'checkout' ) ); ?>" class="dr-summary__proceed-checkout dr-btn"><?php echo __('Proceed to checkout') ?></a>
+        <a href="<?php echo esc_url( drgc_get_page_link( 'checkout' ) ); ?>" class="dr-summary__proceed-checkout dr-btn"><?php echo __( 'Proceed to checkout', 'digital-river-global-commerce' ) ?></a>
 
 	<?php endif; ?>
 

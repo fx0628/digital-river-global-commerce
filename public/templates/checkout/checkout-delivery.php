@@ -13,7 +13,7 @@ $result = 'Standard $0.00';
 <div class="dr-checkout__delivery dr-checkout__el">
 
     <div class="dr-accordion">
-        
+
         <span class="dr-accordion__name">
 
             <span class="dr-accordion__title-long">
@@ -24,16 +24,16 @@ $result = 'Standard $0.00';
 
             <span class="dr-accordion__title-short">
 
-                <?php echo __( 'Delivery' ); ?>
+                <?php echo __( 'Delivery', 'digital-river-global-commerce' ); ?>
 
             </span>
-            
+
 
         </span>
 
        <span class="dr-accordion__edit">Edit></span>
-  
-        
+
+
     </div>
 
     <form id="checkout-delivery-form" class="dr-panel-edit dr-panel-edit--delivery">
@@ -42,7 +42,7 @@ $result = 'Standard $0.00';
 
         <button type="submit" class="dr-panel-edit__btn dr-btn">
 
-            <?php echo __( 'Save and continue' ); ?>
+            <?php echo __( 'Save and continue', 'digital-river-global-commerce' ); ?>
 
         </button>
 
@@ -51,7 +51,7 @@ $result = 'Standard $0.00';
     </form>
 
     <div class="dr-panel-result">
-        
+
         <p class="dr-panel-result__text">
 
             <?php echo $result ?>

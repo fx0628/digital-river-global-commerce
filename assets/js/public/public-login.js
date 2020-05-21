@@ -40,6 +40,11 @@ const LoginModule = (($) => {
 
     const checkoutAsGuest = (e) => {
         e.preventDefault();
+
+        const $btn = $(e.target);
+        if ($btn.hasClass('sending')) return;
+        $btn.toggleClass('sending').blur();
+
         const data = {
             action: 'drgc_checkout_as_guest',
             nonce: drgc_params.ajaxNonce,
@@ -49,7 +54,7 @@ const LoginModule = (($) => {
             url: drgc_params.ajaxUrl,
             data,
             success: () => {
-                window.location.href = drgc_params.checkoutUrl;
+                LoginModule.redirectAfterAuth();
             }
         });
     };
@@ -71,10 +76,46 @@ const LoginModule = (($) => {
         });
     };
 
+    const redirectAfterAuth = () => {
+        if (!document.referrer) {
+            window.location.href = drgc_params.homeUrl;
+        } else if (document.referrer === drgc_params.cartUrl) {
+            window.location.href = drgc_params.checkoutUrl;
+        } else {
+            window.location.href = document.referrer;
+        }
+    };
+
+    const autoLogout = (url) => {
+        const data = {
+            action: 'drgc_logout',
+            nonce: drgc_params.ajaxNonce
+        };
+
+        $('body').css({'pointer-events': 'none', 'opacity': 0.5});
+        $.post(drgc_params.ajaxUrl, data, () => {
+            window.location.href = url;
+        });
+    };
+
+    const resetCookie = () => {
+        const data = {
+            action: 'drgc_reset_cookie',
+            nonce: drgc_params.ajaxNonce
+        };
+
+        $.post(drgc_params.ajaxUrl, data, (res) => {
+            if (!res.success) throw new Error('Cookie reset failed.');
+        });
+    };
+
     return {
         validatePassword,
         checkoutAsGuest,
-        logout
+        logout,
+        redirectAfterAuth,
+        autoLogout,
+        resetCookie
     };
 })(jQuery);
 
@@ -109,7 +150,7 @@ jQuery(document).ready(($) => {
 
         $.post(ajaxUrl, data, function(response) {
             if ( response.success ) {
-                window.location.href = drgc_params.checkoutUrl;
+                LoginModule.redirectAfterAuth();
             } else {
                 $form.data('processing', false);
                 but.removeClass('sending').blur();
@@ -194,7 +235,7 @@ jQuery(document).ready(($) => {
 
         $.post(ajaxUrl, data, function(response) {
             if (response.success) {
-                window.location.href = drgc_params.checkoutUrl;
+                LoginModule.redirectAfterAuth();
             } else {
                 $form.data('processing', false);
                 $button.removeClass('sending').blur();

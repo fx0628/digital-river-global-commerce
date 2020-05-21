@@ -56,6 +56,7 @@ const filter = require('gulp-filter'); // Enables you to work on a subset of the
 const sourcemaps = require('gulp-sourcemaps'); // Maps code in a compressed file (E.g. style.css) back to it’s original position in a source file (E.g. structure.scss, which was later combined with other css files to generate style.css).
 const notify = require('gulp-notify'); // Sends message notification to you.
 const browserSync = require('browser-sync').create(); // Reloads browser and injects CSS. Time-saving synchronized browser testing.
+const checkTextDomain = require('gulp-checktextdomain'); // Checks missing or incorrect text domain.
 const wpPot = require('gulp-wp-pot'); // For generating the .pot file.
 const sort = require('gulp-sort'); // Recommended to prevent unnecessary changes in pot-file.
 const cache = require('gulp-cache'); // Cache files in stream for later use.
@@ -213,7 +214,10 @@ gulp.task('adminJS', () => {
       config: {
         mode: 'production',
         output: {
-          filename: config.jsVendorFile + '.min.js'
+          filename: config.jsVendorFile + '.js'
+        },
+        optimization: {
+          minimize: false
         },
         module: {
           rules: [
@@ -227,8 +231,15 @@ gulp.task('adminJS', () => {
         }
       }
     }))
-    .pipe(lineec()) // Consistent Line Endings for non UNIX systems.
-    .pipe(gulp.dest(config.jsVendorDestination))
+    .pipe(gulp.dest(config.jsVendorDestination)) // Unminified JS has been compiled
+    .pipe(
+      rename({
+        basename: config.jsVendorFile,
+        suffix: '.min'
+      })
+    )
+    .pipe(uglify())
+    .pipe(gulp.dest(config.jsVendorDestination)) // Minified JS has been compiled
     .pipe(notify({ message: '\n\n✅  ===> ADMIN JS — completed!\n', onLast: true }));
 });
 
@@ -251,7 +262,10 @@ gulp.task('publicJS', () => {
       config: {
         mode: 'production',
         output: {
-          filename: config.jsCustomFile + '.min.js'
+          filename: config.jsCustomFile + '.js'
+        },
+        optimization: {
+          minimize: false
         },
         module: {
           rules: [
@@ -265,8 +279,15 @@ gulp.task('publicJS', () => {
         }
       }
     }))
-    .pipe(lineec()) // Consistent Line Endings for non UNIX systems.
-    .pipe(gulp.dest(config.jsCustomDestination))
+    .pipe(gulp.dest(config.jsCustomDestination)) // Unminified JS has been compiled
+    .pipe(
+      rename({
+        basename: config.jsCustomFile,
+        suffix: '.min'
+      })
+    )
+    .pipe(uglify())
+    .pipe(gulp.dest(config.jsCustomDestination)) // Minified JS has been compiled
     .pipe(notify({ message: '\n\n✅  ===> PUBLIC JS — completed!\n', onLast: true }));
 });
 
@@ -313,6 +334,35 @@ gulp.task('images', () => {
  */
 gulp.task('clearCache', function (done) {
   return cache.clearAll(done);
+});
+
+/**
+ * Task: `checkTextDomain`.
+ *
+ * This task will check gettext function calls for missing or incorrect text domain.
+ */
+gulp.task('checkTextDomain', () => {
+  return gulp
+    .src('**/*.php')
+    .pipe(checkTextDomain({
+      text_domain: config.textDomain, // Specify allowed domain(s)
+      keywords: [ // List keyword specifications
+        '__:1,2d',
+        '_e:1,2d',
+        '_x:1,2c,3d',
+        'esc_html__:1,2d',
+        'esc_html_e:1,2d',
+        'esc_html_x:1,2c,3d',
+        'esc_attr__:1,2d',
+        'esc_attr_e:1,2d',
+        'esc_attr_x:1,2c,3d',
+        '_ex:1,2c,3d',
+        '_n:1,2,4d',
+        '_nx:1,2,4c,5d',
+        '_n_noop:1,2,3d',
+        '_nx_noop:1,2,3c,4d'
+      ]
+    }));
 });
 
 /**

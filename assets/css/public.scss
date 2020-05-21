@@ -21,6 +21,10 @@ iframe {
 
 /* Common
 ------------------------------------------------------------------------*/
+html {
+    scroll-behavior: smooth;
+}
+
 .clearfix:before, .clearfix:after {
     display: table;
     content: '';
@@ -85,6 +89,39 @@ iframe {
   .dr-resellerDisclosure {
     margin-right: 0;
   }
+}
+
+.data-table {
+    clear: both;
+    width: 100%;
+    overflow: auto;
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(204, 204, 204);
+
+    thead > tr > th, tbody > tr > th, thead > tr > td, tbody > tr > td {
+        border: 1px solid #ddd;
+    }
+
+    th {
+        background-color: #F9F9F9;
+        color: rgb(0, 0, 0);
+        text-align: left;
+        white-space: nowrap;
+        font-weight: bold;
+        padding: 8px 10px 8px 5px;
+    }
+
+    td {
+        background-color: rgb(255, 255, 255);
+        text-align: left;
+        vertical-align: top;
+        padding: 5px 10px 5px 5px;
+    }
+
+    th:last-child {
+        border-right: 0px;
+    }
 }
 /* Minicart
 ------------------------------------------------------------------------*/
@@ -155,6 +192,11 @@ iframe {
                 &:hover {
                     background: green;
                 }
+            }
+            &:first-child:last-child {
+              width: 100%;
+              margin: 0;
+              border: none;
             }
         }
         &-title {

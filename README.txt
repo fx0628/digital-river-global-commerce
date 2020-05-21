@@ -4,7 +4,7 @@ Tags: ecommerce, global commerce, digital river, online store , headless commerc
 License: GPL-2.0+
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 Requires at least: 5.1
-Tested up to: 5.3.2
+Tested up to: 5.4
 
 A complete ecommerce plugin for WordPress, Digital River works behind the scenes to process payments, fight fraud, fulfill orders, and shield your business from global tax and regulatory risk.
 
@@ -77,29 +77,49 @@ No, you are responsible for hosting your own site.
 
 
 == Changelog ==
-= [1.0] - 2019-08-30 =
-* Initial release
+= [1.2.1] - 2020-05-21 =
+* Updated Shopper Security Features
+* Verified Support of WordPress V5.4
+* Automatic Logout after 1 hour idle time
+* Improved Loading animation in checkout flow
+* Bug fixes for shipping options and product variations
 
-= [1.0.1] - 2019-09-26 =
-* Updated checkout section transition animation
-* Cart banner width is now responsive.
-* Aligned legal footer.
-* Additional validation to shipping and billing information inputs.
-* Fixed an issue where a product would show an additional reduced price value even when an offer was not applied. Now only the full price will appear if there are no offers applied.
-* Fixed an issue where you could reduce line item quantity to zero without removing the entire line item. You can no longer reduce quantity lower than one during checkout for a line item without removing the whole line.
+= [1.2] - 2020-02-19 =
+* Added default legal links in the footer and Terms Of Sale checkbox during checkout
+* Updated text label of locale dropdown during checkout from "Locale" to "Currency" for ease of use by shoppers
+* Added support for dynamic naming tax field as "Tax" or "VAT" based on geographic region of sale
+
+= [1.1] - 2019-12-23 =
+* New Payment Method Support: Apple Pay and Google Pay
+* Real-time product pricing updates within your site on product catalog changes
+* Enhanced checkout pages with Account Creation and Guest Checkout options
+* When a shopper's shipping addressed is not confirmed, Shipping Costs will be shown as estimated and not actuals
+* Improved Settings Page help text
 
 = [1.0.2] - 2019-11-13 =
 * Hide locale selector when there is only one option available
 * Fixed wrong path of product image gallery
 
-= [1.1] - 2019-12-23 =
-* New Payment Method Support: Apple Pay and Google Pay.
-* Real-time product pricing updates within your site on product catalog changes.
-* Enhanced checkout pages with Account Creation and Guest Checkout options.
-* When a shopper's shipping addressed is not confirmed, Shipping Costs will be shown as estimated and not actuals.
-* Improved Settings Page help text.
+= [1.0.1] - 2019-09-26 =
+* Updated checkout section transition animation
+* Cart banner width is now responsive
+* Aligned legal footer
+* Additional validation to shipping and billing information inputs
+* Fixed an issue where a product would show an additional reduced price value even when an offer was not applied. Now only the full price will appear if there are no offers applied
+* Fixed an issue where you could reduce line item quantity to zero without removing the entire line item. You can no longer reduce quantity lower than one during checkout for a line item without removing the whole line
 
-= [1.2] - 2020-02-19 =
-* Added default legal links in the footer and Terms Of Sale checkbox during checkout.
-* Updated text label of locale dropdown during checkout from "Locale" to "Currency" for ease of use by shoppers.
-* Added support for dynamic naming tax field as "Tax" or "VAT" based on geographic region of sale.
+= [1.0] - 2019-08-30 =
+* Initial release
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -5,6 +5,10 @@ global.drgc_params = {
   siteID: 'drdod15',
   wpLocale: 'en_US',
   drLocale: 'en_US',
+  domain: 'api.digitalriver.com',
+  accessToken: 'mockedAccessToken',
+  isLogin: 'false',
+  loginPath: null,
   translations: {
     subtotal_label: 'Sub-total',
     vat_label: 'VAT',
@@ -24,7 +28,10 @@ global.drgc_params = {
     password_lowercase_error_msg: 'Must use at least one lower case letter.',
     password_number_error_msg: 'Must use at least one number.',
     password_char_error_msg: 'Must use at least one special character (! _ @).',
-    password_banned_char_error_msg: 'Contains non-allowable special characters (only ! _ @ are allowed).'
+    password_banned_char_error_msg: 'Contains non-allowable special characters (only ! _ @ are allowed).',
+    buy_now: 'Buy Now',
+    add_to_cart: 'Add to Cart',
+    out_of_stock: 'Out of Stock'
   },
   cart: {
     cart: {

@@ -135,7 +135,6 @@ class DRGC_Admin {
 			'manage_options',
 			'digital-river-global-commerce',
 			array( $this, 'display_settings_page' ),
-			'dashicons-screenoptions',
 			100
 		);
 	}
@@ -270,7 +269,7 @@ class DRGC_Admin {
     register_setting( $this->plugin_name, $this->option_name . '_cron_handler', array( 'sanitize_callback' => array( $this, 'dr_sanitize_checkbox' ), 'default' => '' ) );
 		register_setting( $this->plugin_name, $this->option_name . '_testOrder_handler', array( 'sanitize_callback' => array( $this, 'dr_sanitize_checkbox' ), 'default' => '' ) );
 		register_setting( $this->plugin_name, $this->option_name . '_applepay_handler', array( 'sanitize_callback' => array( $this, 'dr_sanitize_checkbox' ), 'default' => '' ) );
-		register_setting( $this->plugin_name, $this->option_name . '_googlepay_handler', array( 'sanitize_callback' => array( $this, 'dr_sanitize_checkbox' ), 'default' => '' ) );
+    register_setting( $this->plugin_name, $this->option_name . '_googlepay_handler', array( 'sanitize_callback' => array( $this, 'dr_sanitize_checkbox' ), 'default' => '' ) );
 	}
 
 	/**
@@ -444,5 +443,25 @@ class DRGC_Admin {
 		}
 
 		echo '<label class="switch"><input type="checkbox" class="regular-text" name="' . $this->option_name . '_googlepay_handler[checkbox]" id="' . $this->option_name . '_googlepay_handler" value="1" ' . $checked . ' /><span class="slider round"></span></label>';
+  }
+
+  /**
+	 * Render input text field for X-Stream username.
+	 *
+	 * @since    1.3.0
+	 */
+	public function drgc_big_blue_username_cb() {
+		$username = get_option( $this->option_name . '_big_blue_username' );
+		echo '<div data-tooltip="Required to manage subscriptions" data-tooltip-location="right"><input type="text" class="regular-text" name="' . $this->option_name . '_big_blue_username' . '" id="' . $this->option_name . '_big_blue_username' . '" value="' . $username . '"></div>';
+	}
+
+	/**
+	 * Render input text field for X-Stream password.
+	 *
+	 * @since    1.3.0
+	 */
+	public function drgc_big_blue_password_cb() {
+		$password = substr( password_hash( get_option( $this->option_name . '_big_blue_password' ), PASSWORD_DEFAULT ), 0, 16 );
+		echo '<div data-tooltip="Required to manage subscriptions" data-tooltip-location="right"><input type="password" class="regular-text" name="' . $this->option_name . '_big_blue_password' . '" id="' . $this->option_name . '_big_blue_password' . '" value="' . $password . '"></div>';
 	}
 }

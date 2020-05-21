@@ -1,4 +1,5 @@
 import FloatLabel from './float-label'; // 3rd-party plugin
+import DRCommerceApi from './commerce-api';
 import CheckoutUtils from './checkout-utils';
 import DRGooglePay from './payment-googlepay';
 import DRApplePay from './payment-applepay';
@@ -70,28 +71,89 @@ const CheckoutModule = (($) => {
         });
     };
 
-    return {
-        initPreTAndC,
-        updateSummaryLabels,
-        getCountryOptionsFromGC
+    const moveToNextSection = ($section) => {
+        const $nextSection = $section.next();
+
+        $section.removeClass('active').addClass('closed');
+        $nextSection.addClass('active').removeClass('closed');
+
+        if ($nextSection.hasClass('small-closed-left')) {
+            $nextSection.removeClass('small-closed-left');
+            $nextSection.next().removeClass('small-closed-right');
+        }
+
+        adjustColumns($section);
+        updateSummaryLabels();
+
+        $('html, body').animate({
+            scrollTop: ($nextSection.first().offset().top - 80)
+        }, 500);
     };
-})(jQuery);
 
-jQuery(document).ready(($) => {
-    if ($('#checkout-payment-form').length) {
-        const domain = drgc_params.domain;
-        const isLogin = drgc_params.isLogin;
-        const apiBaseUrl = 'https://' + domain + '/v1/shoppers';
-        const drLocale = drgc_params.drLocale || 'en_US';
-        let cartData = drgc_params.cart.cart;
-        const requestShipping = (cartData.shippingOptions.shippingOption) ? true : false;
-        const isGooglePayEnabled = drgc_params.isGooglePayEnabled === 'true';
-        const isApplePayEnabled = drgc_params.isApplePayEnabled === 'true';
+    const adjustColumns = ($section) => {
+        const $shippingSection = $('.dr-checkout__shipping');
+        const $billingSection = $('.dr-checkout__billing');
+        const $paymentSection = $('.dr-checkout__payment');
+        const $confirmSection = $('.dr-checkout__confirmation');
 
-        function getAddress(addressType) {
-            const address = {
+        if ($shippingSection.is(':visible') && $shippingSection.hasClass('closed') && $billingSection.hasClass('closed')) {
+            $shippingSection.addClass('small-closed-left');
+            $billingSection.addClass('small-closed-right');
+        } else {
+            $shippingSection.removeClass('small-closed-left');
+            $billingSection.removeClass('small-closed-right');
+        }
+
+        if ($section && $section.hasClass('dr-checkout__payment')) {
+            $paymentSection.addClass('small-closed-left');
+            $confirmSection.addClass('small-closed-right').removeClass('d-none');
+        } else {
+            $paymentSection.removeClass('small-closed-left');
+            $confirmSection.removeClass('small-closed-right').addClass('d-none');
+        }
+    };
+
+    const validateAddress = ($form) => {
+        const addressType = ($form.attr('id') === 'checkout-shipping-form') ? 'shipping' : 'billing';
+        const validateItems = document.querySelectorAll(`[name^=${addressType}-]`);
+
+        // Validate form
+        $form.addClass('was-validated');
+        $form.find('.dr-err-field').hide();
+
+        for (let i = 0, len = validateItems.length; i < len; i++) {
+            if ($(validateItems[i]).is(':visible') && validateItems[i].checkValidity() === false) {
+                return false;
+            }
+        }
+
+        return true;
+    };
+
+    const buildAddressPayload = ($form) => {
+        const addressType = ($form.attr('id') === 'checkout-shipping-form') ? 'shipping' : 'billing';
+        const email = $('#checkout-email-form > div.form-group > input[name=email]').val().trim();
+        const payload = {shipping: {}, billing: {}};
+
+        $.each($form.serializeArray(), (index, obj) => {
+            const key = obj.name.split('-')[1];
+            payload[addressType][key] = obj.value;
+        });
+
+        payload[addressType].emailAddress = email;
+        
+        if (payload[addressType].country !== 'US') {
+            payload[addressType].countrySubdivision = '';
+        }
+
+        return payload[addressType];
+    };
+
+    const getAddress = (addressType, isDefault) => {
+        return {
             address: {
                 nickName: $('#'+ addressType +'-field-address1').val(),
+                isDefault: isDefault,
                 firstName: $('#'+ addressType +'-field-first-name').val(),
                 lastName: $('#'+ addressType +'-field-last-name').val(),
                 line1: $('#'+ addressType +'-field-address1').val(),
@@ -103,62 +165,154 @@ jQuery(document).ready(($) => {
                 country: $('#'+ addressType +'-field-country :selected').val(),
                 phoneNumber: $('#'+ addressType +'-field-phone').val()
             }
-            };
-            return address;
-        }
+        };
+    };
 
-        function saveShippingAddress() {
-            var address = getAddress('shipping');
-            address.address.isDefault = true;
-            saveShopperAddress(JSON.stringify(address))
-        }
+    const displayAddressErrMsg = (jqXHR = {}, $target) => {
+        if (Object.keys(jqXHR).length) {
+            if (jqXHR.status === 409) {
+                const errorCode = jqXHR.responseJSON.errors.error[0].code;
 
-        function saveBillingAddress() {
-            var address = getAddress('billing');
-            address.address.isDefault = false;
-            saveShopperAddress(JSON.stringify(address))
-        }
-
-        function saveShopperAddress(address) {
-            $.ajax({
-                type: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${drgc_params.accessToken}`
-                },
-                data: address,
-                url: `${apiBaseUrl}/me/addresses`,
-                success: () => {
-                    console.log('address update success.');
-                },
-                error: (jqXHR) => {
-                    console.log(jqXHR);
+                if (errorCode === 'restricted-bill-to-country') {
+                    $target.text(drgc_params.translations.address_error_msg).show();
+                } else if (errorCode === 'restricted-ship-to-country') {
+                    $target.text(drgc_params.translations.address_error_msg).show();
+                } else {
+                    $target.text(drgc_params.translations.undefined_error_msg).show();
                 }
-            });
+            } else {
+                $target.text(jqXHR.responseJSON.errors.error[0].description).show();
+            }
+        } else {
+            $target.text(drgc_params.translations.shipping_options_error_msg).show();
         }
+    };
 
-        //floating labels
-        FloatLabel.init();
+    const displayCartAddress = (addressObj, $target) => {
+        const addressArr = [
+            `${addressObj.firstName} ${addressObj.lastName}`,
+            addressObj.line1,
+            addressObj.city,
+            addressObj.country
+        ];
 
+        $target.text(addressArr.join(', '));
+    };
+
+    const setShippingOptions = (cart) => {
+        const freeShipping = cart.pricing.shippingAndHandling.value === 0;
+        const shippingOptionId = cart.shippingMethod.code;
+        const shippingOptions = cart.shippingOptions.shippingOption || [];
+
+        if (shippingOptions.length) {
+            $.each(shippingOptions, (index, option) => {
+                if ($('#shipping-option-' + option.id).length) return;
+
+                const html = `
+                    <div class="field-radio">
+                        <input type="radio"
+                            name="selector"
+                            id="shipping-option-${option.id}"
+                            data-cost="${option.formattedCost}"
+                            data-id="${option.id}"
+                            data-desc="${option.description}"
+                            >
+                        <label for="shipping-option-${option.id}">
+                            <span>
+                                ${option.description}
+                            </span>
+                            <span class="black">
+                                ${freeShipping ? drgc_params.translations.free_label : option.formattedCost}
+                            </span>
+                        </label>
+                    </div>
+                `;
+
+                $('form#checkout-delivery-form .dr-panel-edit__el').append(html);
+            });
+
+            $('form#checkout-delivery-form').children().find('input:radio[data-id="' + shippingOptionId + '"]').prop("checked", true);
+        } else {
+            $('form#checkout-delivery-form .dr-panel-edit__el').empty();
+        }
+    };
+
+    const preselectShippingOption = async (data) => {
+        const $errorMsgElem = $('#checkout-delivery-form > div.dr-err-field');
+        const defaultShippingOption = data.cart.shippingMethod.code;
+        let shippingOptions = data.cart.shippingOptions.shippingOption || [];
+
+        $('#checkout-delivery-form > button[type="submit"]').prop('disabled', (shippingOptions.length === 0));
+
+        if (shippingOptions.length) {
+            $errorMsgElem.text('').hide();
+
+            shippingOptions = shippingOptions.map((option) => {
+                return option.id;
+            });
+
+            // If default shipping option is not in the list, then pre-select the 1st one
+            if (shippingOptions.indexOf(defaultShippingOption) === -1) {
+                const res = await DRCommerceApi.applyShippingOption(shippingOptions[0]);
+                CheckoutUtils.updateSummaryPricing(res.cart);
+                return res;
+            } else {
+                return new Promise(resolve => resolve(data));
+            }
+        } else {
+            displayAddressErrMsg({}, $errorMsgElem);
+            return new Promise(resolve => resolve(data));
+        }
+    };
+
+    const applyPaymentAndSubmitCart = (sourceId) => {
+        const $form = $('#checkout-confirmation-form');
+        const $errorMsgElem = $('#dr-checkout-err-field');
+
+        DRCommerceApi.applyPaymentMethod(sourceId)
+        .then(() => DRCommerceApi.submitCart({ ipAddress: drgc_params.client_ip }))
+        .then((data) => {
+            $('#checkout-confirmation-form > input[name="order_id"]').val(data.submitCart.order.id);
+            $form.submit();
+        }).catch((jqXHR) => {
+            CheckoutUtils.resetFormSubmitButton($form);
+            CheckoutUtils.resetBodyOpacity();
+            $errorMsgElem.text(CheckoutUtils.getAjaxErrorMessage(jqXHR)).show();
+        });
+    };
+
+    return {
+        initPreTAndC,
+        updateSummaryLabels,
+        getCountryOptionsFromGC,
+        moveToNextSection,
+        adjustColumns,
+        validateAddress,
+        buildAddressPayload,
+        getAddress,
+        displayAddressErrMsg,
+        displayCartAddress,
+        setShippingOptions,
+        preselectShippingOption,
+        applyPaymentAndSubmitCart
+    };
+})(jQuery);
+
+jQuery(document).ready(($) => {
+    if ($('#checkout-payment-form').length) {
         // Globals
-        var digitalriverjs = new DigitalRiver(drgc_params.digitalRiverKey);
-        var payload  = { shipping: {}, billing: {} };
-        var paymentPayload = {};
-        var paymentSourceId = null;
-
+        const domain = drgc_params.domain;
+        const isLogin = drgc_params.isLogin;
+        const drLocale = drgc_params.drLocale || 'en_US';
+        let cartData = drgc_params.cart.cart;
+        const requestShipping = (cartData.shippingOptions.shippingOption) ? true : false;
+        const isGooglePayEnabled = drgc_params.isGooglePayEnabled === 'true';
+        const isApplePayEnabled = drgc_params.isApplePayEnabled === 'true';
+        const digitalriverjs = new DigitalRiver(drgc_params.digitalRiverKey);
+        const addressPayload = {shipping: {}, billing: {}};
+        let paymentSourceId = null;
         // Section progress
         let finishedSectionIdx = -1;
-
-        // Submit first (email) form
-        var emailPayload;
-
-        if (cartData.totalItemsInCart) {
-            CheckoutModule.getCountryOptionsFromGC().then(() => {
-                $('#shipping-field-country, #billing-field-country').trigger('change');
-            });
-        }
-        CheckoutUtils.applyLegalLinks(digitalriverjs);
-        CheckoutModule.initPreTAndC();
 
         // Create elements through DR.js
         if ($('.credit-card-section').length) {
@@ -231,138 +385,6 @@ jQuery(document).ready(($) => {
             }
         }
 
-        function prepareAddress($form) {
-            const addressType = ($form.attr('id') === 'checkout-shipping-form') ? 'shipping' : 'billing';
-
-            // Validate form
-            $form.addClass('was-validated');
-            $form.find('.dr-err-field').hide();
-            const validateItems = document.querySelectorAll(`[name^=${addressType}-]`);
-            for (let i = 0, len = validateItems.length; i < len; i++) {
-                if ($(validateItems[i]).is(':visible') && validateItems[i].checkValidity() === false) {
-                    return false;
-                }
-            }
-
-            // Build payload
-            $.each($form.serializeArray(), function(index, obj) {
-                const key = obj.name.split('-')[1];
-                payload[addressType][key] = obj.value;
-            });
-            payload[addressType].emailAddress = emailPayload;
-            if (payload[addressType].country !== 'US') {
-                payload[addressType].countrySubdivision = '';
-            }
-            return true;
-        }
-
-        function updateCart(queryParams = {}, cartRequest = {}) {
-            const queryStr = $.param(queryParams);
-            return new Promise((resolve, reject) => {
-                $.ajax({
-                    type: 'POST',
-                    headers: {
-                        Accept: 'application/json',
-                        'Content-Type':'application/json',
-                        Authorization: `Bearer ${drgc_params.accessToken}`
-                    },
-                    url: `${apiBaseUrl}/me/carts/active?${queryStr}`,
-                    data: JSON.stringify({
-                        cart: cartRequest
-                    })
-                })
-                .done((data) => {
-                    resolve(data);
-                })
-                .fail((jqXHR) => {
-                    reject(jqXHR);
-                });
-            });
-        }
-
-        function displaySavedAddress(addressObj, $target) {
-            const addressArr = [
-                `${addressObj.firstName} ${addressObj.lastName}`,
-                addressObj.line1,
-                addressObj.city,
-                addressObj.country
-            ];
-            $target.text(addressArr.join(', '));
-        }
-
-        function displayAddressErrMsg(jqXHR, $target) {
-            if (jqXHR.status === 409) {
-                if (jqXHR.responseJSON.errors.error[0].code === 'restricted-bill-to-country') {
-                    $target.text(drgc_params.translations.address_error_msg).show();
-                } else if (jqXHR.responseJSON.errors.error[0].code === 'restricted-ship-to-country') {
-                    $target.text(drgc_params.translations.address_error_msg).show();
-                } else {
-                    $target.text(drgc_params.translations.undefined_error_msg).show();
-                }
-            } else {
-                $target.text(jqXHR.responseJSON.errors.error[0].description).show();
-            }
-        }
-
-        function moveToNextSection($section) {
-            const $prevSection = $section.prev();
-            const $nextSection = $section.next();
-
-            if ($('.dr-checkout__el').index($section) > finishedSectionIdx) {
-                finishedSectionIdx = $('.dr-checkout__el').index($section);
-            }
-
-            $section.removeClass('active').addClass('closed');
-            $nextSection.addClass('active').removeClass('closed');
-
-            if ($nextSection.hasClass('small-closed-left')) {
-                $nextSection.removeClass('small-closed-left');
-                $nextSection.next().removeClass('small-closed-right');
-            }
-
-            adjustColumns($section);
-            CheckoutModule.updateSummaryLabels();
-            $('html, body').animate({
-                scrollTop: ($nextSection.first().offset().top - 80)
-            }, 500);
-        }
-
-        function updateSummaryPricing(cart) {
-            const {formattedOrderTotal, formattedTax} = cart.pricing;
-
-            if (Object.keys(cart.shippingMethod).length > 0) {
-                const formattedShippingAndHandling = (cart.pricing.shippingAndHandling.value === 0) ? drgc_params.translations.free_label : cart.pricing.formattedShippingAndHandling;
-
-                $('div.dr-summary__shipping > .item-value').text(formattedShippingAndHandling);
-            }
-
-            $('div.dr-summary__tax > .item-value').text(formattedTax);
-            $('div.dr-summary__total > .total-value').text(formattedOrderTotal);
-        }
-
-        function adjustColumns($section) {
-            const $shippingSection = $('.dr-checkout__shipping');
-            const $billingSection = $('.dr-checkout__billing');
-            const $paymentSection = $('.dr-checkout__payment');
-            const $confirmSection = $('.dr-checkout__confirmation');
-
-            if ($shippingSection.is(':visible') && $shippingSection.hasClass('closed') && $billingSection.hasClass('closed')) {
-                $shippingSection.addClass('small-closed-left');
-                $billingSection.addClass('small-closed-right');
-            } else {
-                $shippingSection.removeClass('small-closed-left');
-                $billingSection.removeClass('small-closed-right');
-            }
-
-            if ($section && $section.hasClass('dr-checkout__payment')) {
-                $paymentSection.addClass('small-closed-left');
-                $confirmSection.addClass('small-closed-right').removeClass('d-none');
-            } else {
-                $paymentSection.removeClass('small-closed-left');
-                $confirmSection.removeClass('small-closed-right').addClass('d-none');
-            }
-        }
-
         $('#checkout-email-form').on('submit', function(e) {
             e.preventDefault();
 
@@ -378,16 +400,15 @@ jQuery(document).ready(($) => {
                 return false;
             }
 
-            emailPayload = email;
-
             const $section = $('.dr-checkout__email');
-            $section.find('.dr-panel-result__text').text(emailPayload);
-            moveToNextSection($section);
-        });
+            $section.find('.dr-panel-result__text').text(email);
 
-        if ( $('input[name=email]').val() && $('#checkout-email-form').length ){
-            $('#checkout-email-form').submit();
-        }
+            if ($('.dr-checkout__el').index($section) > finishedSectionIdx) {
+                finishedSectionIdx = $('.dr-checkout__el').index($section);
+            }
+
+            CheckoutModule.moveToNextSection($section);
+        });
 
         // Submit shipping info form
         $('#checkout-shipping-form').on('submit', function(e) {
@@ -395,26 +416,43 @@ jQuery(document).ready(($) => {
 
             const $form = $(e.target);
             const $button = $form.find('button[type="submit"]');
-            const isFormValid = prepareAddress($form);
+            const isFormValid = CheckoutModule.validateAddress($form);
 
             if (!isFormValid) return;
+            
+            addressPayload.shipping = CheckoutModule.buildAddressPayload($form);
+            const cartRequest = {
+                address: addressPayload.shipping
+            };
 
             $button.addClass('sending').blur();
-            updateCart({ expand: 'all' }, { shippingAddress: payload.shipping }).then((data) => {
-                if (isLogin === 'true') saveShippingAddress();
 
-                return makeSureShippingOptionPreSelected(data);
+            if (isLogin === 'true') {
+                const address = CheckoutModule.getAddress('shipping', true);
+
+                DRCommerceApi.updateShopperAddress(address).catch((jqXHR) => {
+                    CheckoutUtils.apiErrorHandler(jqXHR);
+                });
+            }
+
+            DRCommerceApi.updateCartShippingAddress({expand: 'all'}, cartRequest).then(() => DRCommerceApi.getCart({expand: 'all'})).then((data) => {
+                return CheckoutModule.preselectShippingOption(data);
             }).then((data) => {
                 $button.removeClass('sending').blur();
-                setShippingOptions(data.cart);
+                CheckoutModule.setShippingOptions(data.cart);
 
                 const $section = $('.dr-checkout__shipping');
-                displaySavedAddress(data.cart.shippingAddress, $section.find('.dr-panel-result__text'));
-                moveToNextSection($section);
-                updateSummaryPricing(data.cart);
+                CheckoutModule.displayCartAddress(data.cart.shippingAddress, $section.find('.dr-panel-result__text'));
+
+                if ($('.dr-checkout__el').index($section) > finishedSectionIdx) {
+                    finishedSectionIdx = $('.dr-checkout__el').index($section);
+                }
+
+                CheckoutModule.moveToNextSection($section);
+                CheckoutUtils.updateSummaryPricing(data.cart);
             }).catch((jqXHR) => {
                 $button.removeClass('sending').blur();
-                displayAddressErrMsg(jqXHR, $form.find('.dr-err-field'));
+                CheckoutModule.displayAddressErrMsg(jqXHR, $form.find('.dr-err-field'));
             });
         });
 
@@ -424,74 +462,51 @@ jQuery(document).ready(($) => {
             const $form = $(e.target);
             const $button = $form.find('button[type="submit"]');
             const billingSameAsShipping = $('[name="checkbox-billing"]').is(':visible:checked');
-            const isFormValid = prepareAddress($form);
+            const isFormValid = CheckoutModule.validateAddress($form);
 
             if (!isFormValid) return;
-            if (billingSameAsShipping) payload.billing = Object.assign({}, payload.shipping);
+
+            addressPayload.billing = (billingSameAsShipping) ? Object.assign({}, addressPayload.shipping) : CheckoutModule.buildAddressPayload($form); 
+            const cartRequest = {
+                address: addressPayload.billing
+            };
 
             $button.addClass('sending').blur();
-            updateCart({ expand: 'all' }, { billingAddress: payload.billing }).then((data) => {
-                if (isLogin == 'true') {
-                    if ((requestShipping && !billingSameAsShipping) || !requestShipping) {
-                        saveBillingAddress();
-                    }
-                }
 
+            if (isLogin === 'true') {
+                if ((requestShipping && !billingSameAsShipping) || !requestShipping) {
+                    const address = CheckoutModule.getAddress('billing', false);
+
+                    DRCommerceApi.updateShopperAddress(address).catch((jqXHR) => {
+                        CheckoutUtils.apiErrorHandler(jqXHR);
+                    });
+                }
+            }
+
+            DRCommerceApi.updateCartBillingAddress({expand: 'all'}, cartRequest).then(() => DRCommerceApi.getCart({expand: 'all'})).then((data) => {
                 // Still needs to apply shipping option once again or the value will be rolled back after updateCart (API's bug)
-                return drgc_params.cart.cart.hasPhysicalProduct ?
-                    makeSureShippingOptionPreSelected(data) :
+                return drgc_params.cart.cart.hasPhysicalProduct ? 
+                    CheckoutModule.preselectShippingOption(data) :
                     new Promise(resolve => resolve(data));
             }).then((data) => {
                 $button.removeClass('sending').blur();
-                setShippingOptions(data.cart);
+                CheckoutModule.setShippingOptions(data.cart);
 
                 const $section = $('.dr-checkout__billing');
-                displaySavedAddress(data.cart.billingAddress, $section.find('.dr-panel-result__text'));
-                moveToNextSection($section);
-                updateSummaryPricing(data.cart);
+
+                CheckoutModule.displayCartAddress(data.cart.billingAddress, $section.find('.dr-panel-result__text'));
+
+                if ($('.dr-checkout__el').index($section) > finishedSectionIdx) {
+                    finishedSectionIdx = $('.dr-checkout__el').index($section);
+                }
+
+                CheckoutModule.moveToNextSection($section);
+                CheckoutUtils.updateSummaryPricing(data.cart);
             }).catch((jqXHR) => {
                 $button.removeClass('sending').blur();
-                displayAddressErrMsg(jqXHR, $form.find('.dr-err-field'));
+                CheckoutModule.displayAddressErrMsg(jqXHR, $form.find('.dr-err-field'));
             });
         });
-
-        function setShippingOptions(cart) {
-            const freeShipping = cart.pricing.shippingAndHandling.value === 0;
-            const shippingOptionId = cart.shippingMethod.code;
-
-            $.each(cart.shippingOptions.shippingOption, function( index, option ) {
-                if ($('#shipping-option-' + option.id).length) return;
-
-                const html = `
-                    <div class="field-radio">
-                        <input type="radio"
-                            name="selector"
-                            id="shipping-option-${option.id}"
-                            data-cost="${option.formattedCost}"
-                            data-id="${option.id}"
-                            data-desc="${option.description}"
-                            >
-                        <label for="shipping-option-${option.id}">
-                            <span>
-                                ${option.description}
-                            </span>
-                            <span class="black">
-                                ${freeShipping ? drgc_params.translations.free_label : option.formattedCost}
-                            </span>
-                        </label>
-                    </div>
-                `;
-
-                $('form#checkout-delivery-form .dr-panel-edit__el').append(html);
-            });
-
-            $('form#checkout-delivery-form').children().find('input:radio[data-id="' + shippingOptionId + '"]').prop("checked", true);
-        }
-
-        function applyShippingOption() {
-            const shippingOptionId = $('form#checkout-delivery-form').children().find('input:radio:checked').first().data('id');
-            applyShippingAndUpdateCart(shippingOptionId);
-        }
 
         // Submit delivery form
         $('form#checkout-delivery-form').on('submit', function(e) {
@@ -500,40 +515,39 @@ jQuery(document).ready(($) => {
             const $form = $(e.target);
             const $input = $(this).children().find('input:radio:checked').first();
             const $button = $(this).find('button[type="submit"]').toggleClass('sending').blur();
-            // Validate shipping option
-            const data = {
-                expand: 'all',
-                shippingOptionId: $input.data('id')
-            };
+            const shippingOptionId = $input.data('id');
+
             $form.find('.dr-err-field').hide();
 
-            $.ajax({
-                type: 'POST',
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${drgc_params.accessToken}`
-                },
-                url: `${apiBaseUrl}/me/carts/active/apply-shipping-option?${$.param(data)}`,
-                success: (data) => {
-                    $button.removeClass('sending').blur();
+            DRCommerceApi.applyShippingOption(shippingOptionId).then((data) => {
+                const $section = $('.dr-checkout__delivery');
+                const freeShipping = data.cart.pricing.shippingAndHandling.value === 0;
+                const resultText = `${$input.data('desc')} ${freeShipping ? drgc_params.translations.free_label : $input.data('cost')}`;
 
-                    const $section = $('.dr-checkout__delivery');
-                    const freeShipping = data.cart.pricing.shippingAndHandling.value === 0;
-                    const resultText = `${$input.data('desc')} ${freeShipping ? drgc_params.translations.free_label : $input.data('cost')}`;
-                    $section.find('.dr-panel-result__text').text(resultText);
-                    moveToNextSection($section);
-                    updateSummaryPricing(data.cart);
-                },
-                error: (jqXHR) => {
-                    $button.removeClass('sending').blur();
-                    displayAddressErrMsg(jqXHR, $form.find('.dr-err-field'));
+                $button.removeClass('sending').blur();
+                $section.find('.dr-panel-result__text').text(resultText);
+
+                if ($('.dr-checkout__el').index($section) > finishedSectionIdx) {
+                    finishedSectionIdx = $('.dr-checkout__el').index($section);
                 }
+
+                CheckoutModule.moveToNextSection($section);
+                CheckoutUtils.updateSummaryPricing(data.cart);
+            }).catch((jqXHR) => {
+                $button.removeClass('sending').blur();
+                CheckoutModule.displayAddressErrMsg(jqXHR, $form.find('.dr-err-field'));
             });
         });
 
         $('form#checkout-delivery-form').on('change', 'input[type="radio"]', function() {
-            applyShippingOption();
+            const $form = $('form#checkout-delivery-form');
+            const shippingOptionId = $form.children().find('input:radio:checked').first().data('id');
+            
+            DRCommerceApi.applyShippingOption(shippingOptionId).then((data) => {
+                CheckoutUtils.updateSummaryPricing(data.cart);
+            }).catch((jqXHR) => {
+                CheckoutModule.displayAddressErrMsg(jqXHR, $form.find('.dr-err-field'));
+            });
         });
 
         $('form#checkout-payment-form').on('submit', function(e) {
@@ -547,7 +561,8 @@ jQuery(document).ready(($) => {
             }
 
             const formdata = $(this).serializeArray();
-            paymentPayload = {};
+            const paymentPayload = {};
+
             $(formdata).each(function(index, obj){
                 paymentPayload[obj.name] = obj.value;
             });
@@ -561,15 +576,15 @@ jQuery(document).ready(($) => {
                 const creditCardPayload = {
                     type: 'creditCard',
                     owner: {
-                        firstName: payload.billing.firstName,
-                        lastName: payload.billing.lastName,
-                        email: payload.billing.emailAddress,
+                        firstName: addressPayload.billing.firstName,
+                        lastName: addressPayload.billing.lastName,
+                        email: addressPayload.billing.emailAddress,
                         address: {
-                            line1: payload.billing.line1,
-                            city: payload.billing.city,
-                            state: payload.billing.countrySubdivision,
-                            country: payload.billing.country,
-                            postalCode: payload.billing.postalCode
+                            line1: addressPayload.billing.line1,
+                            city: addressPayload.billing.city,
+                            state: addressPayload.billing.countrySubdivision,
+                            country: addressPayload.billing.country,
+                            postalCode: addressPayload.billing.postalCode
                         }
                     },
                     amount: cart.pricing.orderTotal.value,
@@ -592,7 +607,12 @@ jQuery(document).ready(($) => {
                             $section.find('.dr-panel-result__text').text(
                                 `${drgc_params.translations.credit_card_ending_label} ${result.source.creditCard.lastFourDigits}`
                             );
-                            moveToNextSection($section);
+
+                            if ($('.dr-checkout__el').index($section) > finishedSectionIdx) {
+                                finishedSectionIdx = $('.dr-checkout__el').index($section);
+                            }
+
+                            CheckoutModule.moveToNextSection($section);
                         }
                     }
                 });
@@ -607,114 +627,9 @@ jQuery(document).ready(($) => {
                 $('#dr-checkout-err-field').text('').hide();
                 $(e.target).toggleClass('sending').blur();
                 $('#dr-payment-failed-msg').hide();
-                applyPaymentToCart(paymentSourceId);
+                CheckoutModule.applyPaymentAndSubmitCart(paymentSourceId);
             }
         });
-
-        function makeSureShippingOptionPreSelected(data) {
-            // If default shipping option is not in the list, then pre-select the 1st one
-            const defaultShippingOption = data.cart.shippingMethod.code;
-            let shippingOptions = data.cart.shippingOptions.shippingOption || [];
-            shippingOptions = shippingOptions.map((option) => {
-                return option.id;
-            });
-            if (shippingOptions.length && shippingOptions.indexOf(defaultShippingOption) === -1) {
-                return applyShippingAndUpdateCart(shippingOptions[0]);
-            } else {
-                return new Promise(resolve => resolve(data));
-            }
-        }
-
-        function applyShippingAndUpdateCart(shippingOptionId) {
-            const data = {
-                expand: 'all',
-                shippingOptionId: shippingOptionId
-            };
-
-            return new Promise((resolve, reject) => {
-                $.ajax({
-                    type: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Accept: 'application/json',
-                        Authorization: `Bearer ${drgc_params.accessToken}`
-                    },
-                    url: `${apiBaseUrl}/me/carts/active/apply-shipping-option?${$.param(data)}`,
-                    success: (data) => {
-                        updateSummaryPricing(data.cart);
-                        resolve(data);
-                    },
-                    error: (jqXHR) => {
-                        reject(jqXHR);
-                    }
-                });
-            });
-        }
-
-        // Initial state for payPal
-        if ( drgc_params.payPal.sourceId ) {
-            $('.dr-checkout').children().addClass('closed');
-            $('.dr-checkout').children().removeClass('active');
-            $('.dr-checkout__payment').removeClass('closed').addClass('active');
-
-            if (drgc_params.payPal.failure == 'true') {
-                // TODO: Display Error on paypal form maybe
-            }
-
-            if (drgc_params.payPal.success == 'true') {
-                applyPaymentToCart(drgc_params.payPal.sourceId);
-            }
-        }
-
-        function applyPaymentToCart(id) {
-            if (!id) return;
-
-            const data = {
-                'paymentMethod': {
-                'sourceId': id
-                }
-            }
-
-            $.ajax({
-                type: 'POST',
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${drgc_params.accessToken}`
-                },
-                url: `${apiBaseUrl}/me/carts/active/apply-payment-method?expand=all`,
-                data: JSON.stringify(data),
-                success: () => {
-                    submitCart();
-                },
-                error: (jqXHR) => {
-                    $('form#checkout-confirmation-form').find('button[type="submit"]').removeClass('sending').blur();
-                    $('#dr-checkout-err-field').text(jqXHR.responseJSON.errors.error[0].description).show();
-                    $('body').css({'pointer-events': 'auto', 'opacity': 1});
-                }
-            });
-        }
-
-        function submitCart() {
-            $.ajax({
-                type: 'POST',
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type':'application/json',
-                    Authorization: `Bearer ${drgc_params.accessToken}`
-                },
-                url: `${apiBaseUrl}/me/carts/active/submit-cart?expand=all`,
-                success: (data) => {
-                    $('#checkout-confirmation-form input[name="order_id"]').val(data.submitCart.order.id);
-                    $('#checkout-confirmation-form').submit();
-                },
-                error: (jqXHR) => {
-                    $('form#checkout-confirmation-form').find('button[type="submit"]').removeClass('sending').blur();
-                    $('#dr-checkout-err-field').text(jqXHR.responseJSON.errors.error[0].description).show();
-                    $('body').css({'pointer-events': 'auto', 'opacity': 1});
-                }
-            });
-        }
 
         // check billing info
         $('[name="checkbox-billing"]').on('click', function (ev) {
@@ -735,8 +650,6 @@ jQuery(document).ready(($) => {
             const $allSections = $section.siblings().andSelf();
             const $finishedSections = $allSections.eq(finishedSectionIdx).prevAll().andSelf();
             const $activeSection = $allSections.filter($('.active'));
-            const $nextSection =  $section.next();
-            const $prevSection = $section.prev();
 
             if ($allSections.index($section) > $allSections.index($activeSection)) {
                 return;
@@ -746,13 +659,9 @@ jQuery(document).ready(($) => {
             $activeSection.removeClass('active');
             $section.removeClass('closed').addClass('active');
 
-            adjustColumns();
+            CheckoutModule.adjustColumns($section);
             CheckoutModule.updateSummaryLabels();
         });
-
-        if ($('#radio-credit-card').is(':checked')) {
-            $('.credit-card-info').show();
-        }
 
         $('input:radio[name="selector"]').on('change', function() {
             switch ($(this).val()) {
@@ -787,6 +696,40 @@ jQuery(document).ready(($) => {
                 $('#billing-field-state').parent('.form-group').addClass('d-none');
             }
         });
+
+        //floating labels
+        FloatLabel.init();
+
+        if ($('input[name=email]').val() && $('#checkout-email-form').length && $('#dr-panel-email-result').is(':empty')) {
+            $('#checkout-email-form').submit();
+        }
+
+        if (cartData.totalItemsInCart) {
+            CheckoutModule.getCountryOptionsFromGC().then(() => {
+                $('#shipping-field-country, #billing-field-country').trigger('change');
+            });
+        }
+        CheckoutUtils.applyLegalLinks(digitalriverjs);
+        CheckoutModule.initPreTAndC();
+
+        if ($('#radio-credit-card').is(':checked')) {
+            $('.credit-card-info').show();
+        }
+
+        // Initial state for payPal
+        if (drgc_params.payPal.sourceId) {
+            $('.dr-checkout').children().addClass('closed');
+            $('.dr-checkout').children().removeClass('active');
+            $('.dr-checkout__payment').removeClass('closed').addClass('active');
+
+            if (drgc_params.payPal.failure == 'true') {
+                // TODO: Display Error on paypal form maybe
+            }
+
+            if (drgc_params.payPal.success == 'true') {
+                CheckoutModule.applyPaymentAndSubmitCart(drgc_params.payPal.sourceId);
+            }
+        }
 
         if ($('#dr-paypal-button').length) {
             // need to get the actual height of the wrapper for rendering the PayPal button
@@ -863,7 +806,7 @@ jQuery(document).ready(($) => {
                     const sourceId = sessionStorage.getItem('paymentSourceId');
 
                     $('body').css({'pointer-events': 'none', 'opacity': 0.5});
-                    applyPaymentToCart(sourceId);
+                    CheckoutModule.applyPaymentAndSubmitCart(sourceId);
                 }
             }, '#dr-paypal-button');
         }

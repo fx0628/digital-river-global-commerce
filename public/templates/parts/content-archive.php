@@ -37,11 +37,13 @@ if ( $variations && isset( $variations[0] ) ) {
     $variations = $variations_sort;
     $gc_id = get_post_meta( $variations[0]->ID, 'gc_product_id', true );
     $pricing = drgc_get_product_pricing( $variations[0]->ID );
-    $product_image = get_post_meta( $variations[0]->ID, 'gc_product_images_url', true );
+    $product_image_url = get_post_meta( $variations[0]->ID, 'gc_product_images_url', true );
+    $product_thumbnail_url = get_post_meta( $variations[0]->ID, 'gc_thumbnail_url', true );
 } else {
     $gc_id = get_post_meta( get_the_ID(), 'gc_product_id', true );
     $pricing = drgc_get_product_pricing( get_the_ID() );
-    $product_image = get_post_meta( get_the_ID(), 'gc_product_images_url', true );
+    $product_image_url = get_post_meta( get_the_ID(), 'gc_product_images_url', true );
+    $product_thumbnail_url = get_post_meta( get_the_ID(), 'gc_thumbnail_url', true );
 }
 
 $list_price = isset( $pricing['list_price_value'] ) ? $pricing['list_price_value'] : '';
@@ -52,7 +54,7 @@ $price = isset( $pricing['price'] ) ? $pricing['price'] : '';
 <div class="dr-pd-item">
     <a href="<?php echo get_permalink(); ?>">
         <div class="dr-pd-item-thumbnail">
-            <img src="<?php echo $product_image ?>" alt="<?php the_title_attribute() ?>"/>
+            <img src="<?php echo $product_thumbnail_url ?: $product_image_url ?>" alt="<?php the_title_attribute() ?>"/>
         </div>
 
         <?php the_title( '<h3 class="dr-pd-item-title">', '</h3>' ); ?>

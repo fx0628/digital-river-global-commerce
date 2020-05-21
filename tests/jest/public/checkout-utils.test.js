@@ -104,7 +104,7 @@ describe('Checkout Utils', () => {
         }
       }]
     };
-    
+
     const stubOptions = [{
       id: '12345',
       label: 'shipping option #1',
@@ -128,7 +128,7 @@ describe('Checkout Utils', () => {
         }
       }]
     };
-    
+
     const stubOptions = [{
       id: '12345',
       label: 'shipping option #1',
@@ -283,6 +283,101 @@ describe('Checkout Utils', () => {
     expect(requestData).toEqual(stubRequestData);
   });
 
+  test('Get the empty entity code', () => {
+    drgc_params.order = {};
+    drgc_params.cart = {};
+
+    const entity = CheckoutUtils.getEntityCode();
+    const stubEntity = '';
+
+    expect(entity).toEqual(stubEntity);
+  });
+
+  test('Get the entity code from the order', () => {
+    drgc_params.order = {
+      order: {
+        businessEntityCode: 'DR_INC-ENTITY'
+      }
+    };
+
+    const entity = CheckoutUtils.getEntityCode();
+    const stubEntity = 'DR_INC-ENTITY';
+
+    expect(entity).toEqual(stubEntity);
+  });
+
+  test('Get the entity code from the cart', () => {
+    drgc_params.order = {};
+    drgc_params.cart = {
+      cart: {
+        businessEntityCode: 'DR_INC-ENTITY'
+      }
+    };
+
+    const entity = CheckoutUtils.getEntityCode();
+    const stubEntity = 'DR_INC-ENTITY';
+
+    expect(entity).toEqual(stubEntity);
+  });
+
+  test('Get the empty compliance', () => {
+    const digitalriverjs = {
+      Compliance: {
+        getDetails: (entityCode, locale) => {
+          return {
+            disclosure: {
+              businessEntity: {},
+              resellerDisclosure: {},
+              termsOfSale: {},
+              privacyPolicy: {},
+              cookiePolicy: {},
+              cancellationRights: {},
+              legalNotice: {}
+            }
+          };
+        }
+      }
+    };
+
+    const compliance = CheckoutUtils.getCompliance(digitalriverjs, '', '');
+    const stubCompliance = {};
+
+    expect(compliance).toEqual(stubCompliance);
+  });
+
+  test('Get the compliance', () => {
+    const digitalriverjs = {
+      Compliance: {
+        getDetails: (entityCode, locale) => {
+          return {
+            disclosure: {
+              businessEntity: { name: 'Digital River Inc.', id: 'DR_INC-ENTITY' },
+              resellerDisclosure: { localizedText: 'is the authorised reseller.', url: 'https://store-domain/resellerDisclosure' },
+              termsOfSale: { localizedText: 'Terms of Sale', url: 'https://store-domain/termsOfSale' },
+              privacyPolicy: { localizedText: 'Privacy Policy', url: 'https://store-domain/privacyPolicy' },
+              cookiePolicy: { localizedText: 'Cookies', url: 'https://store-domain/cookiePolicy' },
+              cancellationRights: { localizedText: 'Cancellation Right', url: 'https://store-domain/cancellationRights' },
+              legalNotice: { localizedText: 'Legal Notice', url: 'https://store-domain/legalNotice' }
+            }
+          };
+        }
+      }
+    };
+
+    const compliance = CheckoutUtils.getCompliance(digitalriverjs, 'DR_INC-ENTITY', 'en_US');
+    const stubCompliance = {
+      businessEntity: { name: 'Digital River Inc.', id: 'DR_INC-ENTITY' },
+      resellerDisclosure: { localizedText: 'is the authorised reseller.', url: 'https://store-domain/resellerDisclosure' },
+      termsOfSale: { localizedText: 'Terms of Sale', url: 'https://store-domain/termsOfSale' },
+      privacyPolicy: { localizedText: 'Privacy Policy', url: 'https://store-domain/privacyPolicy' },
+      cookiePolicy: { localizedText: 'Cookies', url: 'https://store-domain/cookiePolicy' },
+      cancellationRights: { localizedText: 'Cancellation Right', url: 'https://store-domain/cancellationRights' },
+      legalNotice: { localizedText: 'Legal Notice', url: 'https://store-domain/legalNotice' }
+    };
+
+    expect(compliance).toEqual(stubCompliance);
+  });
+
   test('applyLegalLinks should get urls by DR.js and apply them to the links', () => {
     document.body.innerHTML = `<div id="container">
       <a href="#" target="_blank" class="dr-privacyPolicy">Privacy Policy</a>
@@ -335,6 +430,39 @@ describe('Checkout Utils', () => {
     drgc_params.applePayBtnStatus = 'READY';
     CheckoutUtils.displayPreTAndC();
     expect(preTAndCWrapper.style.display).toEqual('');
+  });
+
+  describe('Test apiErrorHandler ', () => {
+    window.drToast = {};
+    drToast.displayMessage = jest.fn();
+
+    test('drToast.displayMessage should not been called when the error is not well-formed', () => {
+      const jqXHR = {
+        status: 409,
+        responseJSON: {}
+      };
+      CheckoutUtils.apiErrorHandler(jqXHR);
+      expect(drToast.displayMessage).not.toBeCalled();
+    });
+
+    test('drToast.displayMessage should been called when there is a standard error', () => {
+      const jqXHR = {
+        status: 409,
+        responseJSON: {
+          errors: {
+            error: [
+              {
+                relation: 'https://developers.digitalriver.com/v1/shoppers/CartsResource',
+                code: 'inventory-unavailable-error',
+                description: 'This product is currently out of stock and cannot be added to your cart.'
+              }
+            ]
+          }
+        }
+      };
+      CheckoutUtils.apiErrorHandler(jqXHR);
+      expect(drToast.displayMessage).toBeCalledWith('This product is currently out of stock and cannot be added to your cart.', 'error');
+    });
   });
 
 });

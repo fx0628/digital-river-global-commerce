@@ -1,9 +1,9 @@
 <div class="dr-checkout__confirmation dr-checkout__el d-none">
 
     <p>
-        <?php echo __( 'Please review your order details and place your order below.' ); ?>
+        <?php echo __( 'Please review your order details and place your order below.', 'digital-river-global-commerce' ); ?>
     </p>
-    
+
     <hr style="margin-top: -5px">
 
     <form id="checkout-confirmation-form" action="<?php echo esc_url( drgc_get_page_link( 'thank-you' ) ); ?>" method="post">
@@ -22,10 +22,10 @@
         </div>
 
         <button type="submit" class="dr-btn">
-            <?php echo __( 'Place Order' ); ?>
+            <?php echo __( 'Place Order', 'digital-river-global-commerce' ); ?>
         </button>
     </form>
 
-    <div id="dr-checkout-err-field" class="invalid-feedback" >Specifed method not supported for the card</div>        
+    <div id="dr-checkout-err-field" class="invalid-feedback" >Specifed method not supported for the card</div>
 
 </div>

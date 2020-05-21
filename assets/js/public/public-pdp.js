@@ -1,9 +1,10 @@
 /* global drgc_params, iFrameResize */
 /* eslint-disable no-alert, no-console */
 import DRCommerceApi from './commerce-api';
+import CheckoutUtils from './checkout-utils';
 
 const PdpModule = (($) => {
-    const fetchVariationPrice = (pricing, $target, idx) => {
+    const bindVariationPrice = (pricing, $target) => {
         if (!pricing.listPrice || !pricing.salePriceWithQuantity) return;
         if (pricing.listPrice.value > pricing.salePriceWithQuantity.value) {
             $target.data('old-price', pricing.listPrice.value);
@@ -11,11 +12,15 @@ const PdpModule = (($) => {
         } else {
             $target.data('price', pricing.formattedSalePriceWithQuantity);
         }
+    };
 
-        if (idx === 0) {
-            if ($target.is('input[type=radio]')) $target.prop('checked', true).trigger('click');
-            else $target.prop('selected', true).trigger('change');
-        }
+    const bindVariationInventoryStatus = (purchasable, $target) => {
+        $target.data('purchasable', purchasable);
+    };
+
+    const selectVariation = ($target) => {
+        if ($target.is('input[type=radio]')) $target.prop('checked', true).trigger('click');
+        else $target.prop('selected', true).trigger('change');
     };
 
     const displayRealTimePricing = (pricing, option, $target) => {
@@ -35,161 +40,30 @@ const PdpModule = (($) => {
         }
     };
 
+    const displayRealTimeBuyBtn = (purchasable, isRedirectBuyBtn, $target) => {
+        if (isRedirectBuyBtn) {
+            $target
+                .text(drgc_params.translations.buy_now)
+                .addClass('dr-redirect-buy-btn')
+                .prop('disabled', false);
+        } else {
+            purchasable = purchasable === 'true';
+            $target
+                .text(purchasable ? drgc_params.translations.add_to_cart : drgc_params.translations.out_of_stock)
+                .prop('disabled', !purchasable);
+        }
+    };
+
     return {
-        fetchVariationPrice,
-        displayRealTimePricing
+        bindVariationPrice,
+        bindVariationInventoryStatus,
+        selectVariation,
+        displayRealTimePricing,
+        displayRealTimeBuyBtn
     };
 })(jQuery);
 
 jQuery(document).ready(($) => {
-    class DRService {
-
-        constructor() {
-            this.domain = drgc_params.domain;
-            this.apiBaseUrl = 'https://' + this.domain + '/v1/shoppers';
-            this.drLocale = drgc_params.drLocale || 'en_US';
-        }
-
-        updateShopper() {
-            return new Promise((resolve, reject) => {
-                $.ajax({
-                    type: 'POST',
-                    headers: {
-                        Authorization: `Bearer ${drgc_params.accessToken}`,
-                    },
-                    url: `${this.apiBaseUrl}/me?locale=${this.drLocale}`,
-                    success: (data) => {
-                        resolve(data);
-                    },
-                    error: (jqXHR) => {
-                        reject(jqXHR);
-                    }
-                });
-            });
-        }
-
-        getCart() {
-            return new Promise((resolve, reject) => {
-                $.ajax({
-                    type: 'GET',
-                    headers: {
-                        Accept: 'application/json',
-                        Authorization: `Bearer ${drgc_params.accessToken}`
-                    },
-                    url: `${this.apiBaseUrl}/me/carts/active`,
-                    success: (data) => {
-                        resolve(data.cart);
-                    },
-                    error: (jqXHR) => {
-                        reject(jqXHR);
-                    }
-                });
-            });
-        }
-
-        updateCart(productID, quantity) {
-            return new Promise((resolve, reject) => {
-                $.ajax({
-                    type: 'POST',
-                    headers: {
-                        Accept: 'application/json',
-                        Authorization: `Bearer ${drgc_params.accessToken}`
-                    },
-                    url: (() => {
-                        let url = `${this.apiBaseUrl}/me/carts/active?productId=${productID}`;
-                        if (quantity) url += `&quantity=${quantity}`;
-                        if (drgc_params.testOrder == "true") url += '&testOrder=true';
-                        return url;
-                    })(),
-                    success: (data) => {
-                        resolve(data.cart);
-                        openMiniCartDisplay();
-                    },
-                    error: (jqXHR) => {
-                        reject(jqXHR);
-                    }
-                });
-            });
-        }
-
-
-        removeLineItem(lineItemID) {
-            return new Promise((resolve, reject) => {
-                $.ajax({
-                    type: 'DELETE',
-                    headers: {
-                        Accept: 'application/json',
-                        Authorization: `Bearer ${drgc_params.accessToken}`
-                    },
-                    url: `${this.apiBaseUrl}/me/carts/active/line-items/${lineItemID}`,
-                    success: () => {
-                        resolve();
-                    },
-                    error: (jqXHR) => {
-                        reject(jqXHR);
-                    }
-                });
-            });
-        }
-
-        getOffersByPoP(popName) {
-            return new Promise((resolve, reject) => {
-                $.ajax({
-                    type: 'GET',
-                    headers: {
-                        Authorization: `Bearer ${drgc_params.accessToken}`,
-                    },
-                    url: `${this.apiBaseUrl}/me/point-of-promotions/SiteMerchandising_${popName}/offers?format=json&expand=all`,
-                    success: (data) => {
-                        resolve(data);
-                        console.log('getOffers', data);
-                    },
-                    error: (jqXHR) => {
-                        reject(jqXHR);
-                    }
-                });
-            });
-        }
-
-        getProductPricing(productID) {
-            return new Promise((resolve, reject) => {
-                $.ajax({
-                    type: 'GET',
-                    headers: {
-                        Authorization: `Bearer ${drgc_params.accessToken}`,
-                    },
-                    url: `${this.apiBaseUrl}/me/products/${productID}/pricing?format=json&expand=all`,
-                    success: (data) => {
-                        resolve(data);
-                    },
-                    error: (jqXHR) => {
-                        reject(jqXHR);
-                    }
-                });
-            });
-        }
-
-        getProductInventoryStatus(productID) {
-            return new Promise((resolve, reject) => {
-                $.ajax({
-                    type: 'GET',
-                    headers: {
-                        Authorization: `Bearer ${drgc_params.accessToken}`,
-                    },
-                    url: `${this.apiBaseUrl}/me/products/${productID}/inventory-status?format=json&expand=all`,
-                    success: (data) => {
-                        resolve(data);
-                        console.log('getProductInventoryStatus', data);
-                    },
-                    error: (jqXHR) => {
-                        reject(jqXHR);
-                    }
-                });
-            });
-        }
-    }
-
-    const drService = new DRService();
     let lineItems = [];
 
     function toggleMiniCartDisplay() {
@@ -229,10 +103,9 @@ jQuery(document).ready(($) => {
             let miniCartLineItems = '<ul class="dr-minicart-list">';
             const miniCartSubtotal = `<p class="dr-minicart-subtotal"><label>${drgc_params.translations.subtotal_label}</label><span>${cart.pricing.formattedSubtotal}</span></p>`;
             const miniCartViewCartBtn = `<a class="dr-btn" id="dr-minicart-view-cart-btn" href="${drgc_params.cartUrl}">${drgc_params.translations.view_cart_label}</a>`;
-            const miniCartCheckoutBtn = `<a class="dr-btn" id="dr-minicart-checkout-btn" href="${drgc_params.checkoutUrl}">${drgc_params.translations.checkout_label}</a>`;
 
             lineItems.forEach((li) => {
-                const productId = li.product.uri.replace(`${drService.apiBaseUrl}/me/products/`, '');
+                const productId = li.product.uri.replace(`${DRCommerceApi.apiBaseUrl}/me/products/`, '');
                 const listPrice = Number(li.pricing.listPriceWithQuantity.value);
                 const salePrice = Number(li.pricing.salePriceWithQuantity.value);
                 const formattedSalePrice = li.pricing.formattedSalePriceWithQuantity;
@@ -260,13 +133,9 @@ jQuery(document).ready(($) => {
             });
             miniCartLineItems += '</ul>';
             $body.append(miniCartLineItems, miniCartSubtotal);
-            $footer.append(miniCartViewCartBtn, miniCartCheckoutBtn);
+            $footer.append(miniCartViewCartBtn);
             $display.append($body, $footer);
         }
-    }
-
-    function errorCallback(jqXHR) {
-        console.log('errorStatus', jqXHR.status);
     }
 
     (function() {
@@ -282,44 +151,57 @@ jQuery(document).ready(($) => {
 
     $('body').on('click', '.dr-buy-btn', (e) => {
         e.preventDefault();
-        let quantity = 1;
-        var $this = $(e.target);
+        const $this = $(e.target);
 
-        var productID = $this.attr('data-product-id') ? $this.attr('data-product-id').toString() : '';
+        if ($this.hasClass('dr-redirect-buy-btn')) {
+            const pdLink = $this.closest('.dr-pd-item, .c-product-card').find('a').attr('href');
+            window.location.href = pdLink;
+        } else {
+            const productID = $this.attr('data-product-id') ? $this.attr('data-product-id').toString() : '';
+            const existingProducts = lineItems.map((li) => {
+                const { uri } = li.product;
+                const id = uri.replace(`${DRCommerceApi.apiBaseUrl}/me/products/`, '');
+                return {
+                    id,
+                    quantity: li.quantity
+                };
+            });
+            let quantity = 1;
 
-        var existingProducts = lineItems.map((li) => {
-            var { uri } = li.product;
-            var id = uri.replace(`${drService.apiBaseUrl}/me/products/`, '');
-            return {
-                id,
-                quantity: li.quantity
-            };
-        });
-
-        // PD page
-        if ($('#dr-pd-offers').length) {
-            quantity = parseInt($('#dr-pd-qty').val(), 10);
-        }
-
-        existingProducts.forEach((pd) => {
-            if (pd.id === productID) {
-                quantity += pd.quantity;
+            // PD page
+            if ($('#dr-pd-offers').length) {
+                quantity = parseInt($('#dr-pd-qty').val(), 10);
             }
-        });
 
-        drService.updateCart(productID, quantity)
-            .then(cart => displayMiniCart(cart))
-            .catch(jqXHR => errorCallback(jqXHR));
+            existingProducts.forEach((pd) => {
+                if (pd.id === productID) {
+                    quantity += pd.quantity;
+                }
+            });
+
+            const queryObj = {
+                productId: productID,
+                quantity,
+                testOrder: drgc_params.testOrder,
+                expand: 'all'
+            };
+            DRCommerceApi.updateCart(queryObj)
+                .then(res => {
+                  displayMiniCart(res.cart);
+                  openMiniCartDisplay();
+                })
+                .catch(jqXHR => CheckoutUtils.apiErrorHandler(jqXHR));
+        }
     });
 
     $('.dr-minicart-display').on('click', '.dr-minicart-item-remove-btn', (e) => {
         e.preventDefault();
         const lineItemID = $(e.target).data('line-item-id');
 
-        drService.removeLineItem(lineItemID)
-            .then(() => drService.getCart())
-            .then(cart => displayMiniCart(cart))
-            .catch(jqXHR => errorCallback(jqXHR));
+        DRCommerceApi.removeLineItem(lineItemID)
+            .then(() => DRCommerceApi.getCart())
+            .then(res => displayMiniCart(res.cart))
+            .catch(jqXHR => CheckoutUtils.apiErrorHandler(jqXHR));
     });
 
     $('span.dr-pd-qty-plus, span.dr-pd-qty-minus').on('click', (e) => {
@@ -352,27 +234,41 @@ jQuery(document).ready(($) => {
     $('.dr_prod-variations select').on('change', function(e) {
         e.preventDefault();
 
-        var varId = $(this).val();
-        var price = $(this).children('option:selected').data('price');
-        var listPriceValue = $(this).children('option:selected').data('old-price');
-        var $prodPrice = $('.single-dr_product .dr-pd-content .dr-pd-price');
-        var $buyBtn = $('.dr-buy-btn');
-        var prodPriceHtml = '';
+        const $selectedOption = $(this).children('option:selected');
+        const varId = $(this).val();
+        const price = $selectedOption.data('price');
+        const listPriceValue = $selectedOption.data('old-price');
+        const purchasable = $selectedOption.data('purchasable');
+        const $prodPrice = $('.single-dr_product .dr-pd-content .dr-pd-price');
+        const $buyBtn = $('.dr-buy-btn');
+        let prodPriceHtml = '';
+
         $buyBtn.attr('data-product-id', varId);
         if (listPriceValue) prodPriceHtml = '<del class="dr-strike-price">' + listPriceValue + '</del>';
         prodPriceHtml += '<strong class="dr-sale-price">' + price + '</strong>';
         $prodPrice.html(prodPriceHtml);
+
+        PdpModule.displayRealTimeBuyBtn(purchasable, false, $buyBtn);
+
+        $('.dr-pd-img').attr('src', $selectedOption.data('thumbnail-url'));
+    });
+
+    $('input[type=radio][name=variation]').on('click', (e) => {
+        const purchasable = $(e.target).data('purchasable');
+        const $buyBtn = $('form.product-detail .dr-buy-btn');
+        PdpModule.displayRealTimeBuyBtn(purchasable, false, $buyBtn);
     });
 
     $( "iframe[name^='controller-']" ).css('display', 'none');
 
-    // Real-time pricing option (for DR child/non-DR child themes)
-    let pdPriceOption = {};
+    // Real-time pricing & inventory status option (for DR child/non-DR child themes)
+    let pdDisplayOption = {};
     let isPdCard = false;
     if ($('#digital-river-child-css').length) { // DR child theme
-        pdPriceOption = {
+        pdDisplayOption = {
             $card: $('.c-product-card'),
             $variationOption: $('input[type=radio][name=variation]'),
+            $singlePDBuyBtn: $('form.product-detail .dr-buy-btn'),
             priceDivSelector: () => { return isPdCard ? '.c-product-card__bottom__price' : '.product-pricing'; },
             listPriceDiv: 'span',
             listPriceClass: () => { return isPdCard ? 'old-price' : 'product-price-old'; },
@@ -382,9 +278,10 @@ jQuery(document).ready(($) => {
             priceClass: () => { return isPdCard ? 'price' : 'product-price'; }
         };
     } else { // non-DR child theme
-        pdPriceOption = {
+        pdDisplayOption = {
             $card: $('.dr-pd-item'),
             $variationOption: $('select[name=dr-variation] option'),
+            $singlePDBuyBtn: $('form#dr-pd-form .dr-buy-btn'),
             priceDivSelector: () => { return isPdCard ? '.dr-pd-item-price' : '.dr-pd-price'; },
             listPriceDiv: 'del',
             listPriceClass: () => { return 'dr-strike-price'; },
@@ -395,44 +292,59 @@ jQuery(document).ready(($) => {
         };
     }
 
-    // Real-time pricing for single PD page (including variation/base products)
+    // Real-time pricing & inventory status for single PD page (including variation/base products)
     if ($('.single-dr_product').length) {
         isPdCard = false;
-        if (pdPriceOption.$variationOption && pdPriceOption.$variationOption.length) { // variation product
-            pdPriceOption.$variationOption.each((idx, elem) => {
-                const $target = $(elem);
-                const productID = $target.val();
-                $(pdPriceOption.priceDivSelector()).text(drgc_params.translations.loading_msg);
+        $(pdDisplayOption.priceDivSelector()).text(drgc_params.translations.loading_msg);
+        pdDisplayOption.$singlePDBuyBtn.text(drgc_params.translations.loading_msg).prop('disabled', true);
+
+        if (pdDisplayOption.$variationOption && pdDisplayOption.$variationOption.length) { // variation product
+            pdDisplayOption.$variationOption.each((idx, elem) => {
+                const $option = $(elem);
+                const productID = $option.val();
 
                 if (!productID) return;
-                DRCommerceApi.getProductPricing(productID).then((productPricing) => {
+                DRCommerceApi.getProduct(productID, { expand: 'inventoryStatus' }).then((res) => {
+                    const purchasable = res.product.inventoryStatus.productIsInStock;
+
                     isPdCard = false; // to avoid being overwritten by concurrency
-                    PdpModule.fetchVariationPrice(productPricing.pricing, $target, idx);
+                    PdpModule.bindVariationPrice(res.product.pricing, $option);
+                    PdpModule.bindVariationInventoryStatus(purchasable, $option);
+
+                    if (idx === 0) PdpModule.selectVariation($option);
                 });
             });
         } else { // base product
-            const productID = $('.dr-buy-btn').data('product-id');
-            const $target = $(pdPriceOption.priceDivSelector()).text(drgc_params.translations.loading_msg);
+            const productID = pdDisplayOption.$singlePDBuyBtn.data('product-id');
+            const $priceDiv = $(pdDisplayOption.priceDivSelector()).text(drgc_params.translations.loading_msg);
 
             if (!productID) return;
-            DRCommerceApi.getProductPricing(productID).then((productPricing) => {
+            DRCommerceApi.getProduct(productID, { expand: 'inventoryStatus' }).then((res) => {
+                const purchasable = res.product.inventoryStatus.productIsInStock;
+
                 isPdCard = false; // to avoid being overwritten by concurrency
-                PdpModule.displayRealTimePricing(productPricing.pricing, pdPriceOption, $target);
+                PdpModule.displayRealTimePricing(res.product.pricing, pdDisplayOption, $priceDiv);
+                PdpModule.displayRealTimeBuyBtn(purchasable, false, pdDisplayOption.$singlePDBuyBtn);
             });
         }
     }
 
-    // Real-time pricing for PD card (category page & recommended products)
-    if (pdPriceOption.$card && pdPriceOption.$card.length) {
+    // Real-time pricing & inventory status for PD card (category page & recommended products)
+    if (pdDisplayOption.$card && pdDisplayOption.$card.length) {
         isPdCard = true;
-        pdPriceOption.$card.each((idx, elem) => {
-            const productID = $(elem).find('.dr-buy-btn').data('product-id');
-            const $target = $(elem).find(pdPriceOption.priceDivSelector()).text(drgc_params.translations.loading_msg);
+        pdDisplayOption.$card.each((idx, elem) => {
+            const $priceDiv = $(elem).find(pdDisplayOption.priceDivSelector()).text(drgc_params.translations.loading_msg);
+            const $buyBtn = $(elem).find('.dr-buy-btn').text(drgc_params.translations.loading_msg).prop('disabled', true);
+            const productID = $buyBtn.data('product-id');
 
             if (!productID) return;
-            DRCommerceApi.getProductPricing(productID).then((productPricing) => {
+            DRCommerceApi.getProduct(productID, { expand: 'inventoryStatus' }).then((res) => {
+                const purchasable = res.product.inventoryStatus.productIsInStock;
+                const isVariation = res.product.parentProduct ? true : false;
+
                 isPdCard = true; // to avoid being overwritten by concurrency
-                PdpModule.displayRealTimePricing(productPricing.pricing, pdPriceOption, $target);
+                PdpModule.displayRealTimePricing(res.product.pricing, pdDisplayOption, $priceDiv);
+                PdpModule.displayRealTimeBuyBtn(purchasable, isVariation, $buyBtn);
             });
         });
     }

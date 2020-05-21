@@ -27,12 +27,11 @@ class DR_Shortcode_Thank_You {
 	 */
 	public static function output( $atts ) {
 		$order = DRGC()->cart->retrieve_order();
+		$customer = DRGC()->shopper->retrieve_shopper();
 
 		drgc_get_template(
 			'thank-you/thank-you.php',
-			array(
-				'order'  => $order,
-			)
+			compact( 'order', 'customer' )
 		);
 	}
 }

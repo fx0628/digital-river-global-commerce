@@ -25,10 +25,12 @@ class DRGC_Shortcodes {
 	 */
 	public static function add_shortcodes() {
 		$shortcodes = array(
-						'dr-cart'            		=> __CLASS__.'::cart',
-            'dr-checkout'           => __CLASS__.'::checkout',
-            'dr-login'       				=> __CLASS__.'::login',
-            'dr-thank-you'          => __CLASS__.'::thank_you',
+			'dr-cart'            		=> __CLASS__.'::cart',
+			'dr-checkout'           => __CLASS__.'::checkout',
+			'dr-login'       				=> __CLASS__.'::login',
+			'dr-thank-you'          => __CLASS__.'::thank_you',
+			'dr-my-subs'            => __CLASS__.'::my_subs',
+			'dr-subs-details'       => __CLASS__.'::subs_details'
 		);
 
 		foreach ( $shortcodes as $shortcode => $function ) {
@@ -90,13 +92,31 @@ class DRGC_Shortcodes {
 		return self::shortcode_wrapper( array( 'DR_Shortcode_Login', 'output' ) );
     }
     
-    /**
+  /**
 	 * Thank you page shortcode.
 	 *
 	 * @return string
 	 */
 	public static function thank_you() {
 		return self::shortcode_wrapper( array( 'DR_Shortcode_Thank_You', 'output' ) );
+	}
+
+	/**
+	 * My Subscriptions page shortcode.
+	 *
+	 * @return string
+	 */
+	public static function my_subs() {
+		return self::shortcode_wrapper( array( 'DR_Shortcode_My_Subs', 'output' ) );
+	}
+
+	/**
+	 * Subscription Details page shortcode.
+	 *
+	 * @return string
+	 */
+	public static function subs_details() {
+		return self::shortcode_wrapper( array( 'DR_Shortcode_Subs_Details', 'output' ) );
 	}
 }
 

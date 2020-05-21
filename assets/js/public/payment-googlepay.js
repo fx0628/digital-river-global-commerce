@@ -17,7 +17,7 @@ const DRGooglePay = (($, translations) => {
     if (window.PaymentRequest) {
       canPay = await new PaymentRequest([{supportedMethods: 'basic-card'}], details).canMakePayment();
     };
-    
+
     return canPay;
   };
 
@@ -31,15 +31,17 @@ const DRGooglePay = (($, translations) => {
       const shippingAddress = event.shippingAddress;
 
       if (shippingAddress.address.country === 'US') {
-        const shippingAddressObj = {
-          id: 'shippingAddress',
-          city: shippingAddress.address.city,
-          countrySubdivision: shippingAddress.address.state,
-          postalCode: shippingAddress.address.postalCode,
-          country: shippingAddress.address.country
+        const cartRequest = {
+          shippingAddress: {
+            id: 'shippingAddress',
+            city: shippingAddress.address.city,
+            countrySubdivision: shippingAddress.address.state,
+            postalCode: shippingAddress.address.postalCode,
+            country: shippingAddress.address.country
+          }
         };
 
-        DRCommerceApi.updateCart({expand: 'all'}, {shippingAddress: shippingAddressObj}).then((data) => {
+        DRCommerceApi.updateCart({expand: 'all'}, cartRequest).then((data) => {
           const displayItems = CheckoutUtils.createDisplayItems(data.cart);
           const shippingOptions = CheckoutUtils.createShippingOptions(data.cart);
 
@@ -106,7 +108,7 @@ const DRGooglePay = (($, translations) => {
     });
 
     googlepay.on('source', (event) => {
-      const cartRequest = {};
+      const cartRequest = { cart: {} };
       const sourceId = event.source.id;
       const billingAddressObj = {
         id: 'billingAddress',
@@ -122,7 +124,7 @@ const DRGooglePay = (($, translations) => {
         emailAddress: event.billingAddress.email
       };
 
-      cartRequest.billingAddress = billingAddressObj;
+      cartRequest.cart.billingAddress = billingAddressObj;
 
       if (requestShipping) {
         const shippingAddressObj = {
@@ -139,7 +141,7 @@ const DRGooglePay = (($, translations) => {
           emailAddress: event.shippingAddress.email
         };
 
-        cartRequest.shippingAddress = shippingAddressObj;
+        cartRequest.cart.shippingAddress = shippingAddressObj;
       }
 
       sessionStorage.setItem('paymentSourceId', sourceId);

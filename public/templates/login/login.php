@@ -44,7 +44,7 @@ $checkout_URI = drgc_get_page_link( 'checkout' );
                         <input class="form-control" name="password" type="password" placeholder="New Password" required autocomplete="off">
 
                         <div class="invalid-feedback">
-                            <?php echo __( 'This field is required.' ); ?>
+                            <?php echo __( 'This field is required.', 'digital-river-global-commerce' ); ?>
                         </div>
                     </div>
 
@@ -52,7 +52,7 @@ $checkout_URI = drgc_get_page_link( 'checkout' );
                         <input class="form-control" name="confirm-password" type="password" placeholder="Confirm New Password" required autocomplete="off">
 
                         <div class="invalid-feedback">
-                            <?php echo __( 'This field is required.' ); ?>
+                            <?php echo __( 'This field is required.', 'digital-river-global-commerce' ); ?>
                         </div>
                     </div>
 
@@ -76,7 +76,7 @@ $checkout_URI = drgc_get_page_link( 'checkout' );
                         <input class="form-control" name="username" type="email" placeholder="Email/User Name" required>
 
                         <div class="invalid-feedback">
-		                    <?php echo __( 'This field is required.' ); ?>
+		                    <?php echo __( 'This field is required.', 'digital-river-global-commerce' ); ?>
                         </div>
                     </div>
 
@@ -84,7 +84,7 @@ $checkout_URI = drgc_get_page_link( 'checkout' );
                         <input class="form-control" name="password" type="password" placeholder="Password" required autocomplete="off">
 
                         <div class="invalid-feedback">
-		                    <?php echo __( 'This field is required.' ); ?>
+		                    <?php echo __( 'This field is required.', 'digital-river-global-commerce' ); ?>
                         </div>
                     </div>
 
@@ -97,50 +97,6 @@ $checkout_URI = drgc_get_page_link( 'checkout' );
                     <a class="forgotten-password" href="#" data-toggle="modal" data-target="#drResetPassword"><?php echo __( 'Forgot password?', 'digital-river-global-commerce' ); ?></a>
                 </div>
 
-                <div class="modal fade" id="drResetPassword" tabindex="-1" role="dialog" aria-labelledby="drResetPasswordTitle" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered" role="document">
-                        <div class="modal-content">
-                            <form id="dr-pass-reset-form" novalidate>
-                                <div class="modal-header">
-                                    <h5 class="modal-title">
-                                        <?php echo __( 'Forgot Password', 'digital-river-global-commerce' ); ?>
-                                    </h5>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body" id="drResetPasswordModalBody">
-                                    <p>
-                                        <?php echo __('To reset your password, please enter your email 
-                                        address below and an email with instructions on
-                                        resetting your password will be sent to you.', 'digital-river-global-commerce'); ?>
-                                    </p>
-                                    <div class="form-group">
-                                        <label for="email-address" class="col-form-label"><?php echo __( 'Email Address:', 'digital-river-global-commerce' ); ?></label>
-                                        <input name="email" type="email" class="form-control" id="email-address" required>
-                                        <div class="invalid-feedback">
-                                            <?php echo __( 'This field is required email.' ); ?>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="email-address-confirm" class="col-form-label"><?php echo __( 'Verify Email Address:', 'digital-river-global-commerce' ); ?></label>
-                                        <input name="email-confirm" type="email" class="form-control" id="email-address-confirm" required>
-                                        <div class="invalid-feedback">
-                                            <?php echo __( 'This field is required email.' ); ?>
-                                        </div>
-                                    </div>
-                                    <div id="dr-reset-pass-error" class="invalid-feedback"></div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button id="dr-pass-reset-submit" type="submit" class="dr-btn w-100">
-                                        <?php echo __( 'Reset Password', 'digital-river-global-commerce' ); ?>
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-
             </section>
 
         <?php endif; ?>
@@ -151,8 +107,7 @@ $checkout_URI = drgc_get_page_link( 'checkout' );
                     <h2><?php echo __( 'NEW CUSTOMER', 'digital-river-global-commerce' ); ?></h2>
 
                     <p>
-		                <?php echo __( 'You can checkout as a guest or become a 
-		                member for faster checkout and great offers.', 'digital-river-global-commerce' ); ?>
+		                <?php echo __( 'You can checkout as a guest or become a member for faster checkout and great offers.', 'digital-river-global-commerce' ); ?>
                     </p>
                 </div>
 
@@ -164,7 +119,7 @@ $checkout_URI = drgc_get_page_link( 'checkout' );
                                 <input class="form-control" name="first_name" type="text" placeholder="First Name" required>
 
                                 <div class="invalid-feedback">
-                                    <?php echo __( 'This field is required.' ); ?>
+                                    <?php echo __( 'This field is required.', 'digital-river-global-commerce' ); ?>
                                 </div>
                             </div>
                         </div>
@@ -174,7 +129,7 @@ $checkout_URI = drgc_get_page_link( 'checkout' );
                                 <input class="form-control" name="last_name" type="text" placeholder="Last Name" required>
 
                                 <div class="invalid-feedback">
-                                    <?php echo __( 'This field is required.' ); ?>
+                                    <?php echo __( 'This field is required.', 'digital-river-global-commerce' ); ?>
                                 </div>
                             </div>
                         </div>
@@ -184,7 +139,7 @@ $checkout_URI = drgc_get_page_link( 'checkout' );
                         <input class="form-control" name="uemail" type="email" placeholder="Email Address" required>
 
                         <div class="invalid-feedback">
-			                <?php echo __( 'This field is required.' ); ?>
+			                <?php echo __( 'This field is required.', 'digital-river-global-commerce' ); ?>
                         </div>
                     </div>
 
@@ -192,7 +147,7 @@ $checkout_URI = drgc_get_page_link( 'checkout' );
                         <input class="form-control" name="upw" type="password" placeholder="Password" required autocomplete="off">
 
                         <div class="invalid-feedback">
-			                <?php echo __( 'This field is required.' ); ?>
+			                <?php echo __( 'This field is required.', 'digital-river-global-commerce' ); ?>
                         </div>
                     </div>
 
@@ -200,7 +155,7 @@ $checkout_URI = drgc_get_page_link( 'checkout' );
                         <input class="form-control" name="upw2" type="password" placeholder="Confirm Password" required autocomplete="off">
 
                         <div class="invalid-feedback">
-			                <?php echo __( 'This field is required.' ); ?>
+			                <?php echo __( 'This field is required.', 'digital-river-global-commerce' ); ?>
                         </div>
                     </div>
 
@@ -234,4 +189,4 @@ $checkout_URI = drgc_get_page_link( 'checkout' );
         </section> -->
 
     </div>
-</div> 
+</div>

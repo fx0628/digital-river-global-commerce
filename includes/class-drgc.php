@@ -95,6 +95,14 @@ class DRGC {
 	public $drgc_ajx;
 
 	/**
+	 * User Management instance
+	 * @since    1.3.0
+	 * @access   public
+	 * @var
+	 */
+	public $user_management;
+
+	/**
 	 * DRGC main instance
 	 *
 	 * @since 1.0.0
@@ -164,11 +172,14 @@ class DRGC {
 		require_once DRGC_PLUGIN_DIR . 'includes/shortcodes/class-dr-shortcode-login.php';
 		require_once DRGC_PLUGIN_DIR . 'includes/shortcodes/class-dr-shortcode-checkout.php';
 		require_once DRGC_PLUGIN_DIR . 'includes/shortcodes/class-dr-shortcode-thank-you.php';
+		require_once DRGC_PLUGIN_DIR . 'includes/shortcodes/class-dr-shortcode-my-subs.php';
+		require_once DRGC_PLUGIN_DIR . 'includes/shortcodes/class-dr-shortcode-subs-details.php';
 		require_once DRGC_PLUGIN_DIR . 'includes/class-drgc-shortcodes.php';
 
 		require_once DRGC_PLUGIN_DIR . 'includes/class-drgc-authenticator.php';
 		require_once DRGC_PLUGIN_DIR . 'includes/class-drgc-shopper.php';
 		require_once DRGC_PLUGIN_DIR . 'includes/class-drgc-cart.php';
+		require_once DRGC_PLUGIN_DIR . 'includes/class-drgc-user-management.php';
 
 		/**
 		 * The class responsible for defining internationalization functionality
@@ -229,6 +240,9 @@ class DRGC {
 
 		// Initialize cart
 		$this->cart = new DRGC_Cart( $this->authenticator );
+
+		// Initialize User Management
+		$this->user_management = new DRGC_User_Management;
 
 		// Start up the cron import
 		new DRGC_Cron();
@@ -310,6 +324,20 @@ class DRGC {
 		$this->loader->add_action( 'wp_ajax_nopriv_drgc_reset_password', $plugin_public, 'dr_reset_password_ajax' );
 		$this->loader->add_action( 'wp_ajax_drgc_reset_password', $plugin_public, 'dr_reset_password_ajax' );
 		$this->loader->add_filter( 'get_footer', $plugin_public, 'add_legal_link', 99, 2 );
+
+		$this->loader->add_action( 'wp_ajax_nopriv_drgc_switch_renewal_type', $plugin_public, 'switch_renewal_type_ajax' );
+    $this->loader->add_action( 'wp_ajax_drgc_switch_renewal_type', $plugin_public, 'switch_renewal_type_ajax' );
+
+		$this->loader->add_action( 'wp_ajax_nopriv_drgc_change_renewal_qty', $plugin_public, 'change_renewal_qty_ajax' );
+		$this->loader->add_action( 'wp_ajax_drgc_change_renewal_qty', $plugin_public, 'change_renewal_qty_ajax' );
+
+    $this->loader->add_action( 'wp_ajax_nopriv_drgc_cancel_subscription', $plugin_public, 'cancel_subscription_ajax' );
+		$this->loader->add_action( 'wp_ajax_drgc_cancel_subscription', $plugin_public, 'cancel_subscription_ajax' );
+
+		$this->loader->add_action( 'wp_ajax_nopriv_drgc_reset_cookie', $plugin_public, 'reset_cookie_ajax' );
+		$this->loader->add_action( 'wp_ajax_drgc_reset_cookie', $plugin_public, 'reset_cookie_ajax' );
+
+		$this->loader->add_action( 'wp_head', $plugin_public, 'add_modal_html' );
 	}
 
 	/**

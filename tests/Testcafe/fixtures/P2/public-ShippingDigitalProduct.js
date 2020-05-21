@@ -25,7 +25,6 @@ fixture `===== DRGC P2 Automation Test - No Shipping for Digital Products =====`
     await t
       .navigateTo(baseURL)
       .maximizeWindow()
-      .click(homePage.productsMenu)
       .expect(Selector('body').hasClass('hfeed')).ok()
 });
 
@@ -34,10 +33,9 @@ test('Estimated Shipping Fee - Standard free Shipping', async t => {
 
   // Add a physical product into cart
   console.log('>> Add Digital product into cart');
-  await t
-    .setTestSpeed(0.9)
-    .click(homePage.addDigiProduct)
-    .takeScreenshot('BWC/minicart.jpg');
+  await t.setTestSpeed(0.9);
+  await utils.addProductsIntoCart(homePage.addDigiProduct, true);
+  await t.takeScreenshot('BWC/minicart.jpg');
 
   // Click View Cart btn in miniCart to go to Cart page
   console.log('>> Direct to cart page');

@@ -50,7 +50,7 @@ module.exports = {
   translationDestination: './languages', // Where to save the translation files.
   pluginShortName: 'drgc', // For CSS filename prefix.
   packageName: 'Digital_River_Global_Commerce', // Package name.
-  bugReport: 'https://github.digitalriverws.net/gc-templates/digital-river-global-commerce', // Where can users report bugs.
+  bugReport: 'https://github.com/DigitalRiver/digital-river-global-commerce', // Where can users report bugs.
   lastTranslator: 'GCTemplates <gcTemplates@digitalriver.com>', // Last translator Email ID.
   team: 'GCTemplates <gcTemplates@digitalriver.com>', // Team's Email ID.
 

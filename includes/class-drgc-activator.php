@@ -34,7 +34,7 @@ class DRGC_Activator {
 				'post_status'    => 'publish',
 				'post_author'    => 1,
 			),
-            'checkout' => array(
+      'checkout' => array(
 		    	'post_name'     => __( 'checkout', 'digital-river-global-commerce' ),
 			    'post_title'    => __( 'Checkout', 'digital-river-global-commerce' ),
 			    'post_content'  => '<!-- wp:shortcode -->[dr-checkout]<!-- /wp:shortcode -->',
@@ -50,7 +50,7 @@ class DRGC_Activator {
 				'post_status'    => 'publish',
 				'post_author'    => 1,
             ),
-            'thank-you' => array(
+      'thank-you' => array(
 				'post_name'     => __( 'thank-you', 'digital-river-global-commerce' ),
 				'post_title'    => __( 'Thank You', 'digital-river-global-commerce' ),
 				'post_content'  => '<!-- wp:shortcode -->[dr-thank-you]<!-- /wp:shortcode -->',

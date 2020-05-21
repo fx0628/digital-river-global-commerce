@@ -13,7 +13,7 @@
 ?>
 
 <?php if ( isset( $_GET['import-complete'] ) ) : ?>
-    <div class="notice notice-success is-dismissible"><p><?php _e( 'Import Complete!' ); ?></p></div>
+    <div class="notice notice-success is-dismissible"><p><?php _e( 'Import Complete!', 'digital-river-global-commerce' ); ?></p></div>
 <?php endif; ?>
 
 <div class="wrapImport">

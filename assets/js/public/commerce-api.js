@@ -1,6 +1,28 @@
 const DRCommerceApi = (($, params) => {
   const apiBaseUrl = `https://${params.domain}/v1/shoppers`;
 
+  const updateShopper = (queryStrings = {}) => {
+    const queryStr = $.param(queryStrings);
+
+    return new Promise((resolve, reject) => {
+      $.ajax({
+        type: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${params.accessToken}`
+        },
+        url: `${apiBaseUrl}/me?${queryStr}`,
+        success: (data) => {
+          resolve(data);
+        },
+        error: (jqXHR) => {
+          reject(jqXHR);
+        }
+      });
+    });
+  };
+
   const getCart = (queryStrings = {}) => {
     const queryStr = $.param(queryStrings);
 
@@ -12,18 +34,18 @@ const DRCommerceApi = (($, params) => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${params.accessToken}`
         },
-        url: `${apiBaseUrl}/me/carts/active?${queryStr}`
-      })
-      .done((data) => {
-        resolve(data);
-      })
-      .fail((jqXHR) => {
-        reject(jqXHR);
+        url: `${apiBaseUrl}/me/carts/active?${queryStr}`,
+        success: (data) => {
+          resolve(data);
+        },
+        error: (jqXHR) => {
+          reject(jqXHR);
+        }
       });
     });
   };
 
-  const updateCart = (queryStrings = {}, cartRequest = {}) => {
+  const updateCart = (queryStrings = {}, requestPayload = {}) => {
     const queryStr = $.param(queryStrings);
 
     return new Promise((resolve, reject) => {
@@ -35,15 +57,101 @@ const DRCommerceApi = (($, params) => {
           Authorization: `Bearer ${params.accessToken}`
         },
         url: `${apiBaseUrl}/me/carts/active?${queryStr}`,
-        data: JSON.stringify({
-          cart: cartRequest
-        })
-      })
-      .done((data) => {
-        resolve(data);
-      })
-      .fail((jqXHR) => {
-        reject(jqXHR);
+        data: !$.isEmptyObject(requestPayload) ? JSON.stringify(requestPayload) : null,
+        success: (data) => {
+          resolve(data);
+        },
+        error: (jqXHR) => {
+          reject(jqXHR);
+        }
+      });
+    });
+  };
+
+  const updateCartShippingAddress = (queryStrings = {}, requestPayload = {}) => {
+    const queryStr = $.param(queryStrings);
+
+    return new Promise((resolve, reject) => {
+      $.ajax({
+        type: 'PUT',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${params.accessToken}`
+        },
+        url: `${apiBaseUrl}/me/carts/active/shipping-address?${queryStr}`,
+        data: !$.isEmptyObject(requestPayload) ? JSON.stringify(requestPayload) : null,
+        success: (data) => {
+          resolve(data);
+        },
+        error: (jqXHR) => {
+          reject(jqXHR);
+        }
+      });
+    });
+  };
+
+  const updateCartBillingAddress = (queryStrings = {}, requestPayload = {}) => {
+    const queryStr = $.param(queryStrings);
+
+    return new Promise((resolve, reject) => {
+      $.ajax({
+        type: 'PUT',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${params.accessToken}`
+        },
+        url: `${apiBaseUrl}/me/carts/active/billing-address?${queryStr}`,
+        data: !$.isEmptyObject(requestPayload) ? JSON.stringify(requestPayload) : null,
+        success: (data) => {
+          resolve(data);
+        },
+        error: (jqXHR) => {
+          reject(jqXHR);
+        }
+      });
+    });
+  };
+
+  const updateLineItem = (lineItemID, queryStrings = {}) => {
+    const queryStr = $.param(queryStrings);
+
+    return new Promise((resolve, reject) => {
+      $.ajax({
+        type: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${params.accessToken}`
+        },
+        url: `${apiBaseUrl}/me/carts/active/line-items/${lineItemID}?${queryStr}`,
+        success: (data) => {
+          resolve(data);
+        },
+        error: (jqXHR) => {
+          reject(jqXHR);
+        }
+      });
+    });
+  };
+
+  const removeLineItem = (lineItemID) => {
+    return new Promise((resolve, reject) => {
+      $.ajax({
+        type: 'DELETE',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${params.accessToken}`
+        },
+        url: `${apiBaseUrl}/me/carts/active/line-items/${lineItemID}`,
+        success: () => {
+          resolve();
+        },
+        error: (jqXHR) => {
+          reject(jqXHR);
+        }
       });
     });
   };
@@ -62,64 +170,63 @@ const DRCommerceApi = (($, params) => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${params.accessToken}`
         },
-        url: `${apiBaseUrl}/me/carts/active/apply-shipping-option?${$.param(queryStrings)}`
-      })
-      .done((data) => {
-        resolve(data);
-      })
-      .fail((jqXHR) => {
-        reject(jqXHR);
+        url: `${apiBaseUrl}/me/carts/active/apply-shipping-option?${$.param(queryStrings)}`,
+        success: (data) => {
+          resolve(data);
+        },
+        error: (jqXHR) => {
+          reject(jqXHR);
+        }
       });
     });
   };
 
-  const submitCart = () => {
-    $.ajax({
-      type: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${params.accessToken}`
-      },
-      url: `${apiBaseUrl}/me/carts/active/submit-cart?expand=all`,
-      success: (data) => {
-        $('#checkout-confirmation-form input[name="order_id"]').val(data.submitCart.order.id);
-        $('#checkout-confirmation-form').submit();
-      },
-      error: (jqXHR) => {
-        $('form#checkout-confirmation-form').find('button[type="submit"]').removeClass('sending').blur();
-        $('#dr-checkout-err-field').text(jqXHR.responseJSON.errors.error[0].description).show();
-        $('body').css({'pointer-events': 'auto', 'opacity': 1});
-      }
-    });
-  };
-
-  const applyPaymentAndSubmitCart = (sourceId) => {
+  const applyPaymentMethod = (sourceId) => {
     if (!sourceId) return;
 
     const postData = {
       'paymentMethod': {
         'sourceId': sourceId
       }
-    }
+    };
 
-    $.ajax({
-      type: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${params.accessToken}`
-      },
-      url: `${apiBaseUrl}/me/carts/active/apply-payment-method?expand=all`,
-      data: JSON.stringify(postData),
-      success: () => {
-        submitCart();
-      },
-      error: (jqXHR) => {
-        $('form#checkout-confirmation-form').find('button[type="submit"]').removeClass('sending').blur();
-        $('#dr-checkout-err-field').text(jqXHR.responseJSON.errors.error[0].description).show();
-        $('body').css({'pointer-events': 'auto', 'opacity': 1});
-      }
+    return new Promise((resolve, reject) => {
+      $.ajax({
+        type: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${params.accessToken}`
+        },
+        url: `${apiBaseUrl}/me/carts/active/apply-payment-method?expand=all`,
+        data: JSON.stringify(postData),
+        success: (data) => {
+          resolve(data);
+        },
+        error: (jqXHR) => {
+          reject(jqXHR);
+        }
+      });
+    });
+  };
+
+  const getProduct = (productID, queryObj = {}) => {
+    return new Promise((resolve, reject) => {
+      $.ajax({
+        type: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${params.accessToken}`
+        },
+        url: `${apiBaseUrl}/me/products/${productID}?${$.param(queryObj)}`,
+        success: (data) => {
+          resolve(data);
+        },
+        error: (jqXHR) => {
+          reject(jqXHR);
+        }
+      });
     });
   };
 
@@ -128,9 +235,141 @@ const DRCommerceApi = (($, params) => {
       $.ajax({
         type: 'GET',
         headers: {
-          Authorization: `Bearer ${params.accessToken}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${params.accessToken}`
         },
-        url: `${apiBaseUrl}/me/products/${productID}/pricing?format=json`,
+        url: `${apiBaseUrl}/me/products/${productID}/pricing`,
+        success: (data) => {
+          resolve(data);
+        },
+        error: (jqXHR) => {
+          reject(jqXHR);
+        }
+      });
+    });
+  };
+
+  const getProductInventoryStatus = (productID) => {
+    return new Promise((resolve, reject) => {
+      $.ajax({
+        type: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${params.accessToken}`
+        },
+        url: `${apiBaseUrl}/me/products/${productID}/inventory-status`,
+        success: (data) => {
+          resolve(data);
+        },
+        error: (jqXHR) => {
+          reject(jqXHR);
+        }
+      });
+    });
+  };
+
+  const getOffersByProduct = (productID, queryStrings = {}) => {
+    const queryStr = $.param(queryStrings);
+
+    return new Promise((resolve, reject) => {
+      $.ajax({
+        type: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${params.accessToken}`
+        },
+        url: `${apiBaseUrl}/me/products/${productID}/offers?${queryStr}`,
+        success: (data) => {
+          resolve(data);
+        },
+        error: (jqXHR) => {
+          reject(jqXHR);
+        }
+      });
+    });
+  };
+
+  const getOffersByPoP = (popType, queryStrings = {}, productID) => {
+    const queryStr = $.param(queryStrings);
+    const productUri = productID ? `products/${productID}/` : '';
+
+    return new Promise((resolve, reject) => {
+      $.ajax({
+        type: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${params.accessToken}`
+        },
+        url: `${apiBaseUrl}/me/${productUri}point-of-promotions/${popType}/offers?${queryStr}`,
+        success: (data) => {
+          resolve(data);
+        },
+        error: (jqXHR) => {
+          reject(jqXHR);
+        }
+      });
+    });
+  };
+
+  const postByUrl = (requestUrl) => {
+    return new Promise((resolve, reject) => {
+      $.ajax({
+        type: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${params.accessToken}`
+        },
+        url: requestUrl,
+        success: (data) => {
+          resolve(data);
+        },
+        error: (jqXHR) => {
+          reject(jqXHR);
+        }
+      });
+    });
+  };
+
+  const updateShopperAddress = (address) => {
+    if (!address) return;
+
+    return new Promise((resolve, reject) => {
+      $.ajax({
+        type: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${params.accessToken}`
+        },
+        url: `${apiBaseUrl}/me/addresses`,
+        data: JSON.stringify(address),
+        success: () => {
+          resolve();
+        },
+        error: (jqXHR) => {
+          reject(jqXHR);
+        }
+      });
+    });
+  };
+
+  const submitCart = (queryStrings = {}) => {
+    const queryStr = $.param(queryStrings);
+
+    return new Promise((resolve, reject) => {
+      $.ajax({
+        type: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${params.accessToken}`
+        },
+        url: `${apiBaseUrl}/me/carts/active/submit-cart?${queryStr}`,
         success: (data) => {
           resolve(data);
         },
@@ -142,12 +381,25 @@ const DRCommerceApi = (($, params) => {
   };
 
   return {
+    apiBaseUrl,
+    updateShopper,
     getCart,
     updateCart,
     submitCart,
+    updateLineItem,
+    removeLineItem,
     applyShippingOption,
-    applyPaymentAndSubmitCart,
-    getProductPricing
+    applyPaymentMethod,
+    getProduct,
+    getProductPricing,
+    getProductInventoryStatus,
+    getOffersByProduct,
+    getOffersByPoP,
+    postByUrl,
+    updateCartShippingAddress,
+    updateCartBillingAddress,
+    updateShopperAddress,
+    submitCart
   };
 
 })(jQuery, drgc_params);

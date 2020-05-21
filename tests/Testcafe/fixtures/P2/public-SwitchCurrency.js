@@ -58,8 +58,7 @@ test('Switch Currency: Cart Page', async t => {
 
 test('Switch Currency: Checkout Page', async t => {
   console.log('Test Case: Check the unit of currency after switching currency in Checkout Page.');
-  await utils.addProductsIntoCart(homePage.addPhyProduct);
-  await minicartPage.clickCheckoutBtn();
+  await utils.addProductAndProceedToCheckout(homePage.addPhyProduct);
   await utils.clickItem(new LoginPage().continueAsGuestBtn);
 
   console.log('>> Default USD, switch currency to EUR and check the currency display correctly');

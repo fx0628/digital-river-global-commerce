@@ -76,6 +76,35 @@
             width: 32%;
         }
     }
+
+    #dr-autoRenewTermsContainer {
+        border: 1px solid #dddddd;
+        margin-top: 20px;
+
+        fieldset {
+            padding: 0;
+            border: none;
+        }
+
+        legend {
+            display: none;
+        }
+
+        h3 {
+            background: #dddddd none repeat scroll 0 0;
+            margin: 0;
+            padding: 10px;
+        }
+
+        #dr-optInAutoRenew {
+            margin: 5px;
+            padding: 10px;
+        }
+
+        .invalid-feedback {
+            font-size: inherit;
+        }
+    }
 }
 
 .dr-currency-toggler {

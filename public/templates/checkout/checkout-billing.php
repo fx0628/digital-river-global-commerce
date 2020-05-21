@@ -23,7 +23,7 @@ if ( $cart['cart']['billingAddress']['line1'] != '') {
 
             <span class="dr-accordion__title-short">
 
-                <?php echo __( 'Billing' ); ?>
+                <?php echo __( 'Billing', 'digital-river-global-commerce' ); ?>
 
             </span>
 
@@ -39,7 +39,7 @@ if ( $cart['cart']['billingAddress']['line1'] != '') {
 
             <p class="field-text">
 
-                <?php echo __( 'What is your billing address?' ); ?>
+                <?php echo __( 'What is your billing address?', 'digital-river-global-commerce' ); ?>
 
             </p>
 
@@ -49,7 +49,7 @@ if ( $cart['cart']['billingAddress']['line1'] != '') {
 
                 <label for="checkbox-billing" class="checkbox-label">
 
-                    <?php echo __( 'Billing address is the same as delivery address' ); ?>
+                    <?php echo __( 'Billing address is the same as delivery address', 'digital-river-global-commerce' ); ?>
 
                 </label>
 
@@ -65,7 +65,7 @@ if ( $cart['cart']['billingAddress']['line1'] != '') {
 
                     <label for="billing-field-first-name" class="float-label ">
 
-                        <?php echo __( 'First Name *' ); ?>
+                        <?php echo __( 'First Name', 'digital-river-global-commerce' ); ?> *
 
                     </label>
 
@@ -73,7 +73,7 @@ if ( $cart['cart']['billingAddress']['line1'] != '') {
 
                     <div class="invalid-feedback">
 
-                        <?php echo __( 'This field is required.' ); ?>
+                        <?php echo __( 'This field is required.', 'digital-river-global-commerce' ); ?>
 
                     </div>
 
@@ -87,7 +87,7 @@ if ( $cart['cart']['billingAddress']['line1'] != '') {
 
                     <label for="billing-field-last-name" class="float-label">
 
-                        <?php echo __( 'Last Name *' ); ?>
+                        <?php echo __( 'Last Name', 'digital-river-global-commerce' ); ?> *
 
                     </label>
 
@@ -95,7 +95,7 @@ if ( $cart['cart']['billingAddress']['line1'] != '') {
 
                     <div class="invalid-feedback">
 
-                        <?php echo __( 'This field is required.' ); ?>
+                        <?php echo __( 'This field is required.', 'digital-river-global-commerce' ); ?>
 
                     </div>
 
@@ -109,7 +109,7 @@ if ( $cart['cart']['billingAddress']['line1'] != '') {
 
                     <label for="billing-field-address1" class="float-label ">
 
-                        <?php echo __( 'Address line 1 *' ); ?>
+                        <?php echo __( 'Address line 1', 'digital-river-global-commerce' ); ?> *
 
                     </label>
 
@@ -117,7 +117,7 @@ if ( $cart['cart']['billingAddress']['line1'] != '') {
 
                     <div class="invalid-feedback">
 
-                        <?php echo __( 'This field is required.' ); ?>
+                        <?php echo __( 'This field is required.', 'digital-river-global-commerce' ); ?>
 
                     </div>
 
@@ -131,7 +131,7 @@ if ( $cart['cart']['billingAddress']['line1'] != '') {
 
                     <label for="billing-field-address2" class="float-label">
 
-                        <?php echo __( 'Address line 2/Company' ); ?>
+                        <?php echo __( 'Address line 2/Company', 'digital-river-global-commerce' ); ?>
 
                     </label>
 
@@ -147,15 +147,15 @@ if ( $cart['cart']['billingAddress']['line1'] != '') {
 
                     <label for="billing-field-city" class="float-label">
 
-                        <?php echo __( 'City *' ); ?>
-                        
+                        <?php echo __( 'City', 'digital-river-global-commerce' ); ?> *
+
                     </label>
 
                     <input id="billing-field-city" type="text" name="billing-city" value="<?php echo $billingAddress['city'] ?>" class="form-control float-field float-field--city" required>
 
                     <div class="invalid-feedback">
 
-                        <?php echo __( 'This field is required.' ); ?>
+                        <?php echo __( 'This field is required.', 'digital-river-global-commerce' ); ?>
 
                     </div>
 
@@ -166,9 +166,9 @@ if ( $cart['cart']['billingAddress']['line1'] != '') {
             <div class="form-group dr-panel-edit__el">
 
                 <select class="form-control custom-select" name="billing-country" id="billing-field-country" required>
-                    
+
                     <option value="">
-                        <?php echo __( 'Select Country *' ); ?>
+                        <?php echo __( 'Select Country', 'digital-river-global-commerce' ); ?> *
                     </option>
 
                     <?php foreach ( $locales['locales'] as $locale => $currency ): ?>
@@ -187,7 +187,7 @@ if ( $cart['cart']['billingAddress']['line1'] != '') {
 
                 <div class="invalid-feedback">
 
-                    <?php echo __( 'This field is required.' ); ?>
+                    <?php echo __( 'This field is required.', 'digital-river-global-commerce' ); ?>
 
                 </div>
 
@@ -198,11 +198,11 @@ if ( $cart['cart']['billingAddress']['line1'] != '') {
                 <select class="form-control custom-select" name="billing-countrySubdivision" id="billing-field-state" required>
 
                     <option value="">
-                        <?php echo __( 'Select State *' ); ?>
+                        <?php echo __( 'Select State', 'digital-river-global-commerce' ); ?> *
                     </option>
 
                     <?php foreach ($usa_states as $key => $state): ?>
-                        <?php 
+                        <?php
                             $option = "<option ";
                             $option .= $billingAddress['countrySubdivision'] === $key ? 'selected ' : '';
                             $option .= "value=\"{$key}\">{$state}</option>";
@@ -214,7 +214,7 @@ if ( $cart['cart']['billingAddress']['line1'] != '') {
 
                 <div class="invalid-feedback">
 
-                    <?php echo __( 'This field is required.' ); ?>
+                    <?php echo __( 'This field is required.', 'digital-river-global-commerce' ); ?>
 
                 </div>
 
@@ -226,7 +226,7 @@ if ( $cart['cart']['billingAddress']['line1'] != '') {
 
                     <label for="billing-field-zip" class="float-label">
 
-                        <?php echo __( 'Zipcode *' ); ?>
+                        <?php echo __( 'Zipcode', 'digital-river-global-commerce' ); ?> *
 
                     </label>
 
@@ -234,7 +234,7 @@ if ( $cart['cart']['billingAddress']['line1'] != '') {
 
                     <div class="invalid-feedback">
 
-                        <?php echo __( 'This field is required.' ); ?>
+                        <?php echo __( 'This field is required.', 'digital-river-global-commerce' ); ?>
 
                     </div>
 
@@ -248,10 +248,10 @@ if ( $cart['cart']['billingAddress']['line1'] != '') {
 
                     <label for="billing-field-phone" class="float-label ">
 
-                        <?php echo __( 'Phone' ); ?>
-                    
+                        <?php echo __( 'Phone', 'digital-river-global-commerce' ); ?>
+
                     </label>
-                    
+
                     <input id="billing-field-phone" type="text" name="billing-phoneNumber" value="<?php echo $billingAddress['phoneNumber'] ?>" class="form-control float-field float-field--phone" >
 
                 </div>
@@ -264,7 +264,7 @@ if ( $cart['cart']['billingAddress']['line1'] != '') {
 
         <button type="submit" class="dr-panel-edit__btn dr-btn">
 
-            <?php echo __( 'Save and continue' ); ?>
+            <?php echo __( 'Save and continue', 'digital-river-global-commerce' ); ?>
 
         </button>
 

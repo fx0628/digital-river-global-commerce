@@ -4,6 +4,7 @@ require_once dirname( dirname(__FILE__) ).'/vendor/autoload.php';
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Promise;
+use GuzzleHttp\Exception\RequestException;
 use Psr\Http\Message\ResponseInterface;
 
 /**
@@ -120,14 +121,21 @@ abstract class AbstractHttpService {
      * Initialize new client
      * 
      * @param boolean $force_basic_auth
+     * @param boolean $is_user_management
      * 
      * @return \GuzzleHttp\Client
      */
-    private function createClient( $force_basic_auth = false ): Client {
+    private function createClient( $force_basic_auth = false, $is_user_management = false ): Client {
         if ( $this->token && ! $force_basic_auth ) {
             $this->config['headers']['Authorization'] = trim( ucfirst( $this->tokenType ) . ' ' . $this->token );
         } else {
-            $auth = base64_encode( get_option( 'drgc_api_key' ) . ':' . get_option( 'drgc_api_secret' ) );
+            if ( $is_user_management ) {
+                $auth = base64_encode( get_option( 'drgc_big_blue_username' ) . '@Admin' . ':' . get_option( 'drgc_big_blue_password' ) );
+                $this->config['headers']['Content-Type'] = 'text/xml; charset=UTF8';
+            } else {
+                $auth = base64_encode( get_option( 'drgc_api_key' ) . ':' . get_option( 'drgc_api_secret' ) );
+            }
+
             $this->config['headers']['Authorization'] = trim( 'Basic ' . $auth );
         }
 
@@ -310,5 +318,27 @@ abstract class AbstractHttpService {
         $response = $client->post( $uri, $data );
         
         return $this->getResponseData( $response );
+    }
+
+    /**
+     * @param string $uri
+     * @param string $data
+     *
+     * @return string
+     */
+    protected function postXml( string $uri = '', string $data = '' ) {
+        $client = $this->createClient( true, true );
+
+        try {
+            $response = $client->post( $uri, ['body' => $data] );
+
+            return $response->getBody();
+        } catch ( RequestException $e ) {
+            if ( $e->hasResponse() ) {
+                return $e->getResponse();
+            }
+        } catch ( \Exception $e ) {
+            return $e->getMessage();
+        }
     }
 }

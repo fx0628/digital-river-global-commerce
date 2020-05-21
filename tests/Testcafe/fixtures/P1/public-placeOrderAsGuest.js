@@ -44,7 +44,7 @@ test('Place order with physical product', async t => {
 test('Place order with digital product', async t => {
   console.log('Test Case: Place Order with Digital Product');
 
-  await utils.addProductAndProceedToCheckout(homePage.addDigiProduct);
+  await utils.addProductAndProceedToCheckout(homePage.addDigiProduct, true);
 
   //Continue as a guest
   console.log('>> Checkout page - Continue checkout as a guest');

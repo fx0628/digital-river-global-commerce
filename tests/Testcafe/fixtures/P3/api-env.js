@@ -23,8 +23,7 @@ test('Verify API Environment', async t => {
   console.log('Test Case: Verify API Environment');
   console.log('>> Add a product into cart and go to checkout page');
   await t.maximizeWindow();
-  await utils.addProductsIntoCart(homePage.addPhyProduct);
-  await utils.clickItem(homePage.checkoutBtn);
+  await utils.addProductAndProceedToCheckout(homePage.addPhyProduct);
 
   console.log("API ENVIROMENT SET:" + Config.apiEnv);
   console.log("API ENVIROMENT URL:" + apiURL);

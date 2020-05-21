@@ -74,6 +74,7 @@ export default class CheckoutPage {
       .click(this.shippingCountry)
       .click(shippingCountryOption.withText(shippingInfo.country))
       .expect(this.shippingCountry.value).eql(shippingInfo.countryValue)
+      .hover(this.shippingState)
       .click(this.shippingState)
       .click(shippingStateOption.withText(shippingInfo.state))
       .expect(this.shippingState.value).eql(shippingInfo.stateValue)

@@ -55,15 +55,15 @@ if($billing_city !== '' && $billing_code !== '') {
 
 <div class="dr-thank-you-wrapper" id="dr-thank-you-page-wrapper">
 
-    <h1 class="page-title"><?php echo __('Thank you') ?></h1>
+    <h1 class="page-title"><?php echo __( 'Thank you', 'digital-river-global-commerce' ) ?></h1>
 
     <div class="dr-thank-you-wrapper__info">
 
-        <div class="subheading"><?php echo __('Your order was completed successfully.') ?></div>
+        <div class="subheading"><?php echo __( 'Your order was completed successfully.', 'digital-river-global-commerce' ) ?></div>
 
         <div class="order-number">
 
-            <span><?php echo __('Order number is: ') ?></span>
+            <span><?php echo __( 'Order number is: ', 'digital-river-global-commerce' ) ?></span>
             <span><?php echo $order_number ?></span>
 
         </div>
@@ -72,20 +72,20 @@ if($billing_city !== '' && $billing_code !== '') {
 
             <p><?php
                  echo sprintf(
-                     __('You will receive an email confirmation shortly at %s'), 
+                     __( 'You will receive an email confirmation shortly at %s', 'digital-river-global-commerce' ),
                     $order['order']['shippingAddress']['emailAddress']) ?? '';
             ?></p>
 
-            <button id="print-button" class="print-button"><?php echo __('Print Receipt') ?></button>
+            <button id="print-button" class="print-button"><?php echo __( 'Print Receipt', 'digital-river-global-commerce' ) ?></button>
 
         </div>
-    
+
     </div>
 
     <div class="dr-thank-you-wrapper__products dr-summary dr-summary--thank-you">
 
         <div class="dr-summary__products">
-                    
+
             <?php if ( isset($order['order']) && isset($order['order']['lineItems']['lineItem'] )) : ?>
                 <?php if ( $order['order']['lineItems']['lineItem'] ) : ?>
                     <?php foreach ($order['order']['lineItems']['lineItem'] as $line_item): ?>
@@ -105,7 +105,7 @@ if($billing_city !== '' && $billing_code !== '') {
             <?php if ( $order['order']['hasPhysicalProduct'] ) : ?>
             <div class="dr-order-address__shipping">
 
-                <div class="address-title"><?php echo __('Shipping Address') ?></div>
+                <div class="address-title"><?php echo __( 'Shipping Address', 'digital-river-global-commerce' ) ?></div>
 
                 <div class="address-info">
                     <p><?php echo $shipping_name; ?></p>
@@ -119,7 +119,7 @@ if($billing_city !== '' && $billing_code !== '') {
 
             <div class="dr-order-address__billing">
 
-                <div class="address-title"><?php echo __('Billing Address') ?></div>
+                <div class="address-title"><?php echo __( 'Billing Address', 'digital-river-global-commerce' ) ?></div>
 
                 <div class="address-info">
                     <p><?php echo $billing_name; ?></p>
@@ -133,9 +133,9 @@ if($billing_city !== '' && $billing_code !== '') {
         </div>
 
         <div class="dr-summary dr-summary--thank-you order-summary">
-        
+
             <?php include_once DRGC_PLUGIN_DIR . 'public/templates/thank-you/thank-you-summary.php'; ?>
-                
+
         </div>
 
     </div>
