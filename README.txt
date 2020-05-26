@@ -1,4 +1,4 @@
-=== Digital River Global Commerce ===
+﻿=== Digital River Global Commerce ===
 Contributors: digitalriver
 Tags: ecommerce, global commerce, digital river, online store , headless commerce , shopping cart , checkout , payments
 License: GPL-2.0+
@@ -109,7 +109,7 @@ No, you are responsible for hosting your own site.
 * Fixed an issue where you could reduce line item quantity to zero without removing the entire line item. You can no longer reduce quantity lower than one during checkout for a line item without removing the whole line
 
 = [1.0] - 2019-08-30 =
-* Initial release
+* Initial release and launch.
 
 
 
